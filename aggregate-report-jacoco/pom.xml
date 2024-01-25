@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!--
+/*********************************************************************
+* Copyright (c) 2024 Contributors to the Eclipse Foundation.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.eclipse.daanse</groupId>
+    <artifactId>org.eclipse.daanse.common</artifactId>
+    <version>${revision.org.eclipse.daanse.common}</version>
+  </parent>
+  <artifactId>aggregate-report-jacoco</artifactId>
+  <packaging>pom</packaging>
+
+  <version>0.0.0-SNAPSHOT</version>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.eclipse.daanse</groupId>
+      <artifactId>org.eclipse.daanse.common.io.fs.watcher</artifactId>
+      <version>${revision.org.eclipse.daanse.common.io.fs.watcher}</version>
+    </dependency>
+  </dependencies>
+
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.11</version>
+        <executions>
+          <execution>
+            <id>report-aggregate</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report-aggregate</goal>
+            </goals>
+            <configuration>
+              <dataFileIncludes>
+                <dataFileInclude>target/*.exec</dataFileInclude>
+              </dataFileIncludes>
+              <dataFileIncludes>
+                <dataFileInclude>*.exec</dataFileInclude>
+              </dataFileIncludes>
+              <dataFileIncludes>
+                <dataFileInclude>target/*/jacoco.exec</dataFileInclude>
+              </dataFileIncludes>
+              <dataFileIncludes>
+                <dataFileInclude>
+                  target/test/tmp/testing/test/generated/jacoco.exec</dataFileInclude>
+              </dataFileIncludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
