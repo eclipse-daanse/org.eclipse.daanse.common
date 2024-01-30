@@ -6,7 +6,6 @@ on:
 
 jobs:
   publish:
-    needs: build
     if: ${{ (github.repository == 'eclipse-daanse/org.eclipse.daanse.common') && (github.ref == 'refs/heads/main') && (github.event_name != 'pull_request') }}
     runs-on: ubuntu-latest
     steps:
