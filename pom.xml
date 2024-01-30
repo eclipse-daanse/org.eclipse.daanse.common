@@ -733,7 +733,7 @@
   </dependencies>
   <modules>
     <module>io</module>
-    <module>aggregate-report-jacoco</module>
+<!--    <module>aggregate-report-jacoco</module>-->
   </modules>
   <profiles>
     <profile>
