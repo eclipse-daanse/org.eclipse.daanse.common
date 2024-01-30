@@ -32,9 +32,9 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
           PASSPHRASE: ${{ secrets.ORG_GPG_PASSPHRASE }}
 
-    # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
-    - name: Update dependency graph
-      continue-on-error: true
-      uses: advanced-security/maven-dependency-submission-action@ed72a3242c5331913886b41ca9ea66c9195ebdaa # v4.0.0
-      with:
-        directory: '/'
+      # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
+      - name: Update dependency graph
+        continue-on-error: true
+        uses: advanced-security/maven-dependency-submission-action@ed72a3242c5331913886b41ca9ea66c9195ebdaa # v4.0.0
+        with:
+          directory: '/'
