@@ -14,9 +14,9 @@ jobs:
         run: |
           cat <(echo -e "${{ secrets.ORG_GPG_PRIVATE_KEY }}") | gpg --batch --import
           gpg --list-secret-keys --keyid-format LONG
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Set up Java for publishing to Maven Central Snapshot Repository
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4.0.0
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -25,9 +25,16 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
           gpg-passphrase: PASSPHRASE
-      - name: Make a snapshot
+      - name: deploy
         run: mvn -Pdeploy --no-transfer-progress --batch-mode clean deploy
         env:
           MAVEN_USERNAME: ${{ secrets.ORG_OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
           PASSPHRASE: ${{ secrets.ORG_GPG_PASSPHRASE }}
+
+    # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
+    - name: Update dependency graph
+      continue-on-error: true
+      uses: advanced-security/maven-dependency-submission-action@ed72a3242c5331913886b41ca9ea66c9195ebdaa # v4.0.0
+      with:
+        directory: '/'
