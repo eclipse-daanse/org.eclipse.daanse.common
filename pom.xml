@@ -576,7 +576,7 @@
       <dependency>
         <groupId>org.osgi</groupId>
         <artifactId>org.osgi.util.pushstream</artifactId>
-        <version>1.0.2</version>
+        <version>1.1.0</version>
         <scope>runtime</scope>
       </dependency>
       <dependency>
