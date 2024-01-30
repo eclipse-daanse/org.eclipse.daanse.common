@@ -1,4 +1,4 @@
-name: 'Editor Config format check'
+name: Editor Config format check
 
 on:
   pull_request:

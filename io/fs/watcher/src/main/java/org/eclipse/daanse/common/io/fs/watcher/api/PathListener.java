@@ -22,8 +22,6 @@ import org.osgi.annotation.versioning.ConsumerType;
 /**
  * The listener interface for receiving path events. The class that is
  * interested in processing a path event implements this interface.
- *
- * @see PathEvent
  */
 @ConsumerType
 public interface PathListener {

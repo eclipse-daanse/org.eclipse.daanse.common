@@ -1,4 +1,4 @@
-name: eclipse dash ip-check
+name: Eclipse-Dash IP-Check
 
 on:
   push:
