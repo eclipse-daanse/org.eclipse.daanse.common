@@ -28,29 +28,3 @@ jobs:
       uses: advanced-security/maven-dependency-submission-action@ed72a3242c5331913886b41ca9ea66c9195ebdaa # v4.0.0
       with:
         directory: '/'
-  publish:
-    if: ${{ (github.repository == 'eclipse-daanse/org.eclipse.daanse.common')  && (github.ref == 'refs/heads/main') }}
-    runs-on: ubuntu-latest
-    steps:
-      - id: install-secret-key
-        name: Install gpg secret key
-        run: |
-          cat <(echo -e "${{ secrets.ORG_GPG_PRIVATE_KEY }}") | gpg --batch --import
-          gpg --list-secret-keys --keyid-format LONG
-      - uses: actions/checkout@v3
-      - name: Set up Java for publishing to Maven Central Snapshot Repository
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
-          server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
-          gpg-passphrase: PASSPHRASE
-      - name: Make a snapshot
-        run: mvn -Pdeploy --no-transfer-progress --batch-mode clean deploy
-        env:
-          MAVEN_USERNAME: ${{ secrets.ORG_OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
-          PASSPHRASE: ${{ secrets.ORG_GPG_PASSPHRASE }}
