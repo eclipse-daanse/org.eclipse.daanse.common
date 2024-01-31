@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.eclipse.daanse.common.io.fs.watcher.api.EventKind;
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherListener;
@@ -111,8 +112,10 @@ class FileWatcherRunable implements Runnable {
 
     private void registerPath(Path path) throws IOException {
 
-        List<Path> currentPaths = Files.list(path).toList();
-        listener.handleInitialPaths(currentPaths);
+        try (Stream<Path> stream = Files.list(path)) {
+            List<Path> currentPaths = stream.toList();
+            listener.handleInitialPaths(currentPaths);
+        }
 
         WatchKey watchKey = path.register(watcheService, kinds);
         synchronized (watchKeys) {
