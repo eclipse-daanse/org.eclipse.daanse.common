@@ -24,7 +24,7 @@ import org.osgi.annotation.versioning.ConsumerType;
  * interested in processing a path event implements this interface.
  */
 @ConsumerType
-public interface PathListener {
+public interface FileSystemWatcherListener {
 
     /**
      * Handle base path.

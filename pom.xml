@@ -499,6 +499,12 @@
       <!-- run -->
       <!-- test -->
       <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${awaitility.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
         <version>${assertj.version}</version>
@@ -697,6 +703,10 @@
       <artifactId>mockito-junit-jupiter</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.test.common</artifactId>
     </dependency>
@@ -733,7 +743,6 @@
   </dependencies>
   <modules>
     <module>io</module>
-<!--    <module>aggregate-report-jacoco</module>-->
   </modules>
   <profiles>
     <profile>

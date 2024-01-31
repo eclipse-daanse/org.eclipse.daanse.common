@@ -16,14 +16,18 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.eclipse.daanse</groupId>
-    <artifactId>org.eclipse.daanse.common.io.fs</artifactId>
-    <version>${revision.org.eclipse.daanse.common.io.fs}</version>
+    <artifactId>org.eclipse.daanse.common.io.fs.watcher</artifactId>
+    <version>${revision.org.eclipse.daanse.common.io.fs.watcher}</version>
   </parent>
-  <artifactId>org.eclipse.daanse.common.io.fs.watcher</artifactId>
-  <version>${revision.org.eclipse.daanse.common.io.fs.watcher}</version>
-  <packaging>pom</packaging>
-  <modules>
-    <module>api</module>
-    <module>watchservice</module>
-  </modules>
+  <artifactId>org.eclipse.daanse.common.io.fs.watcher.watchservice</artifactId>
+      <version>${revision.org.eclipse.daanse.common.io.fs.watcher.watcher}</version>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.daanse</groupId>
+      <artifactId>org.eclipse.daanse.common.io.fs.watcher.api</artifactId>
+      <version>${revision.org.eclipse.daanse.common.io.fs.watcher.api}</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
 </project>
