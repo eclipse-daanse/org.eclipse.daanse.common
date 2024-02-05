@@ -142,7 +142,6 @@ class FileWatcherRunable implements Runnable {
         synchronized (watchKeys) {
             for (WatchKey key : watchKeys.keySet()) {
                 key.cancel();
-
             }
             watchKeys.clear();
         }
@@ -150,44 +149,45 @@ class FileWatcherRunable implements Runnable {
             watcheService.close();
             watcheService = null;
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception while WatcheService::close on shutdown", e);
         }
-
     }
 
     @Override
     public void run() {
 
-        try {
-            doPollsUntilStop();
-        } catch (Exception e) {
-            LOGGER.error("Error while tracking Filechanges", e);
-        }
+        loopWatchUntilStop();
 
         clear();
-
     }
 
-    private void doPollsUntilStop() throws ClosedWatchServiceException {
-        while (!stop) {
-            WatchKey key = watcheService.poll();// not take so do not block
+    private void loopWatchUntilStop() {
+        try {
+            while (!stop) {
+                WatchKey key = watcheService.take();
 
-            if (key == null) {
-                // no events, try again
-                Thread.yield();
-                continue;
+                if (key == null) {
+                    // no events, try again
+                    continue;
+                }
+
+                Path basePath = basePathFromWatchkey(key);
+
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    handleEvent(event, basePath);
+                }
+
+                boolean resetValid = key.reset();
+                if (!resetValid) {
+                    LOGGER.warn("invalid WatchKey while reset. basePath: {}  key: {}", basePath, key);
+                }
             }
-
-            Path basePath = basePathFromWatchkey(key);
-
-            for (WatchEvent<?> event : key.pollEvents()) {
-                handleEvent(event, basePath);
-            }
-
-            boolean resetValid = key.reset();
-            if (!resetValid) {
-                LOGGER.warn("invalid WatchKey while reset. basePath: {}  key: {}", basePath, key);
-            }
+        } catch (ClosedWatchServiceException e) {
+            LOGGER.warn("watcheService::take is interrupted, by closing WatchService");
+        } catch (InterruptedException e) {
+            shutdown();
+            Thread.currentThread().interrupt();
+            LOGGER.error("watcheService::take is interrupted for unknown reason", e);
         }
     }
 
