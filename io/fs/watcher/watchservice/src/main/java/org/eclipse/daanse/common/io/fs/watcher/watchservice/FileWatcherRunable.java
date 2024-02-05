@@ -239,4 +239,8 @@ class FileWatcherRunable implements Runnable {
         });
 
     }
+
+    public Path getObservedPath() {
+        return observedPath;
+    }
 }

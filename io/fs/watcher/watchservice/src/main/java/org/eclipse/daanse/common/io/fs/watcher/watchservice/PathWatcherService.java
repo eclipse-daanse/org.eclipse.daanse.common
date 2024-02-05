@@ -36,7 +36,6 @@ public class PathWatcherService {
 
     private final Map<ComponentServiceObjects<FileSystemWatcherListener>, FileSystemWatcherListener> listenersCSO = Collections
             .synchronizedMap(new HashMap<>());
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     void bindPathListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO, Map<String, Object> map)
@@ -44,7 +43,8 @@ public class PathWatcherService {
 
         FileSystemWatcherListener listener = listenerCSO.getService();
         FileWatcherRunable fwrRunable = new FileWatcherRunable(listener, map);
-        executorService.execute(fwrRunable);
+        String name = FileWatcherRunable.class.getSimpleName() + " " + fwrRunable.getObservedPath();
+        Thread.ofVirtual().name(name).start(fwrRunable);
         listeners.put(listener, fwrRunable);
         listenersCSO.put(listenerCSO, listener);
 

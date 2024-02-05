@@ -47,7 +47,7 @@ class OSGiServiceTest {
     Path path;
 
     @org.junit.jupiter.api.Test
-    void testDbMappingSchemaProvider() throws Exception {
+    void testFileSystemListener() throws Exception {
 
         StoringFileSystemWatcherListener listener = new StoringFileSystemWatcherListener();
 
