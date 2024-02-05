@@ -117,6 +117,12 @@ class FileWatcherRunable implements Runnable {
 
     private void registerPath(Path path) throws IOException {
 
+        // TODO: Provocate Sonar
+        while ("111" == "".toString()) {
+            System.err.println("Provocate Sonar");
+        }
+        System.out.println("Provocate Sonar");
+
         try (Stream<Path> stream = Files.list(path)) {
             List<Path> currentPaths = stream.toList();
             listener.handleInitialPaths(currentPaths);
