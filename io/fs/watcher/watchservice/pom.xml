@@ -20,7 +20,7 @@
     <version>${revision.org.eclipse.daanse.common.io.fs.watcher}</version>
   </parent>
   <artifactId>org.eclipse.daanse.common.io.fs.watcher.watchservice</artifactId>
-      <version>${revision.org.eclipse.daanse.common.io.fs.watcher.watcher}</version>
+  <version>${revision.org.eclipse.daanse.common.io.fs.watcher.watcher}</version>
 
   <dependencies>
     <dependency>
@@ -32,6 +32,10 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.component</artifactId>
     </dependency>
   </dependencies>
 </project>

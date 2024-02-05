@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherListener;
+import org.osgi.service.component.ComponentServiceObjects;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -32,18 +33,26 @@ public class PathWatcherService {
 
     private final Map<FileSystemWatcherListener, FileWatcherRunable> listeners = Collections
             .synchronizedMap(new HashMap<>());
+
+    private final Map<ComponentServiceObjects<FileSystemWatcherListener>, FileSystemWatcherListener> listenersCSO = Collections
+            .synchronizedMap(new HashMap<>());
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-    void bindPathListener(FileSystemWatcherListener listener, Map<String, Object> map) throws IOException {
+    void bindPathListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO, Map<String, Object> map)
+            throws IOException {
 
+        FileSystemWatcherListener listener = listenerCSO.getService();
         FileWatcherRunable fwrRunable = new FileWatcherRunable(listener, map);
         executorService.execute(fwrRunable);
         listeners.put(listener, fwrRunable);
+        listenersCSO.put(listenerCSO, listener);
+
     }
 
-    void unbindPathListener(FileSystemWatcherListener listener) {
-
+    void unbindPathListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO) {
+        FileSystemWatcherListener listener = listenersCSO.remove(listenerCSO);
+        listenerCSO.ungetService(listener);
         FileWatcherRunable runable = listeners.remove(listener);
         if (runable != null) {
             runable.shutdown();
