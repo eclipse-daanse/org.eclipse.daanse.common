@@ -28,10 +28,13 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -46,111 +49,20 @@ class FileWatcherRunable implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileWatcherRunable.class);
 
-    private WatchService watcheService;
-    private final Map<WatchKey, Path> watchKeys = new ConcurrentHashMap<>();
-    private FileSystemWatcherListener listener;
+    private FileSystem fileSystem;
+    private WatchService watchService;
+
+    private final Map<WatchKey, WatchKeyConfig> watchKeysToConfig = new ConcurrentHashMap<>();
+
+    final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+
     private boolean stop;
 
-    private Path observedPath;
-    private Kind<?>[] kinds;
+    public FileWatcherRunable() throws IOException {
 
-    private Optional<Pattern> oPattern;
-    private boolean recursive;
+        fileSystem = FileSystems.getDefault();
+        watchService = fileSystem.newWatchService();
 
-    FileWatcherRunable(FileSystemWatcherListener listener, Map<String, Object> props) throws IOException {
-        this.listener = listener;
-        this.watcheService = FileSystems.getDefault().newWatchService();
-        Object oRecursive = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_RECURSIVE,
-                "false");
-        if (oRecursive == null) {
-            oRecursive = "false";
-        }
-
-        this.recursive = Boolean.valueOf(oRecursive.toString());
-
-        Object objPattern = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATTERN,
-                FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATTERN_DEFAULT);
-
-        boolean emptyPattern = objPattern == null || objPattern.toString().isBlank();
-        oPattern = emptyPattern ? Optional.empty() : Optional.of(Pattern.compile(objPattern.toString()));
-
-        Object oKinds = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_KINDS,
-                new String[] { EventKind.ENTRY_CREATE.toString(), EventKind.ENTRY_DELETE.toString(),
-                        EventKind.ENTRY_MODIFY.toString() });
-
-        if (oKinds instanceof String[] sKinds) {
-
-            kinds = new WatchEvent.Kind<?>[sKinds.length];
-            for (int i = 0; i < sKinds.length; i++) {
-
-                String sKind = sKinds[i];
-                if ("ENTRY_CREATE".equals(sKind)) {
-
-                    kinds[i] = EventKind.ENTRY_CREATE.getKind();
-                } else if ("ENTRY_DELETE".equals(sKind)) {
-
-                    kinds[i] = EventKind.ENTRY_DELETE.getKind();
-                } else if ("ENTRY_MODIFY".equals(sKind)) {
-
-                    kinds[i] = EventKind.ENTRY_MODIFY.getKind();
-                }
-            }
-        }
-
-        FileSystem fs = FileSystems.getDefault();
-
-        Object oPath = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATH, "");
-
-        boolean emptyPath = oPath == null || oPath.toString().isBlank();
-        String sPath = emptyPath ? "" : oPath.toString();
-        observedPath = fs.getPath(sPath).toAbsolutePath();
-
-        listener.handleBasePath(observedPath);
-
-        if (recursive) {
-            registerPathWithSubDirs(observedPath);
-        } else {
-            registerPath(observedPath);
-        }
-
-    }
-
-    private void registerPath(Path path) throws IOException {
-
-        try (Stream<Path> stream = Files.list(path)) {
-            List<Path> currentPaths = stream.toList();
-            listener.handleInitialPaths(currentPaths);
-        }
-
-        WatchKey watchKey = path.register(watcheService, kinds);
-        synchronized (watchKeys) {
-            watchKeys.put(watchKey, path);
-        }
-
-    }
-
-    private void clear() {
-
-        listener = null;
-        observedPath = null;
-        kinds = null;
-        oPattern = Optional.empty();
-    }
-
-    public void shutdown() {
-        stop = true;
-        synchronized (watchKeys) {
-            for (WatchKey key : watchKeys.keySet()) {
-                key.cancel();
-            }
-            watchKeys.clear();
-        }
-        try {
-            watcheService.close();
-            watcheService = null;
-        } catch (IOException e) {
-            LOGGER.error("Exception while WatcheService::close on shutdown", e);
-        }
     }
 
     @Override
@@ -158,31 +70,141 @@ class FileWatcherRunable implements Runnable {
 
         loopWatchUntilStop();
 
-        clear();
+        shutdown();
+    }
+
+    void addFileWatcherRunable(FileSystemWatcherListener listener, Map<String, Object> props) throws IOException {
+
+        Object oRecursive = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_RECURSIVE,
+                "false");
+        if (oRecursive == null) {
+            oRecursive = "false";
+        }
+
+        boolean recursive = Boolean.parseBoolean(oRecursive.toString());
+
+        Object objPattern = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATTERN,
+                FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATTERN_DEFAULT);
+
+        boolean emptyPattern = objPattern == null || objPattern.toString().isBlank();
+        Optional<Pattern> oPattern = emptyPattern ? Optional.empty()
+                : Optional.of(Pattern.compile(objPattern.toString()));
+
+        Object oKinds = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_KINDS,
+                new String[] { EventKind.ENTRY_CREATE.toString(), EventKind.ENTRY_DELETE.toString(),
+                        EventKind.ENTRY_MODIFY.toString() });
+
+        List<Kind<?>> kinds = new ArrayList<>();
+
+        if (oKinds instanceof String[] sKinds) {
+
+            for (int i = 0; i < sKinds.length; i++) {
+
+                String sKind = sKinds[i];
+                if ("ENTRY_CREATE".equals(sKind)) {
+
+                    kinds.add(EventKind.ENTRY_CREATE.getKind());
+                } else if ("ENTRY_DELETE".equals(sKind)) {
+
+                    kinds.add(EventKind.ENTRY_DELETE.getKind());
+                } else if ("ENTRY_MODIFY".equals(sKind)) {
+
+                    kinds.add(EventKind.ENTRY_MODIFY.getKind());
+                }
+            }
+        }
+
+        Object oPath = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATH, "");
+
+        boolean emptyPath = oPath == null || oPath.toString().isBlank();
+        String sPath = emptyPath ? "" : oPath.toString();
+        Path observedPath = fileSystem.getPath(sPath).toAbsolutePath();
+
+        listener.handleBasePath(observedPath);
+        WatchKeyConfig config = new WatchKeyConfig(listener, observedPath, List.copyOf(kinds), oPattern, recursive);
+
+        if (recursive) {
+            registerPathWithSubDirs(config);
+        } else {
+            registerPath(config);
+        }
+
+    }
+
+    void remove(FileSystemWatcherListener listener) {
+
+        watchKeysToConfig.entrySet().stream().filter(e -> listener.equals(e.getValue().listener())).map(Entry::getKey)
+                .forEach(this::unregistertKey);
+
+    }
+
+    private void registerPath(WatchKeyConfig config) throws IOException {
+
+        Path path = config.path();
+        try (Stream<Path> stream = Files.list(path)) {
+            List<Path> currentPaths = stream.toList();
+            FileSystemWatcherListener listener = config.listener();
+            listener.handleInitialPaths(currentPaths);
+        }
+
+        rwl.writeLock().lock();
+        WatchKey watchKey = path.register(watchService, kindsListToArray(config));
+        watchKeysToConfig.put(watchKey, config);
+        rwl.writeLock().unlock();
+
+    }
+
+    private static Kind<?>[] kindsListToArray(WatchKeyConfig config) {
+        return config.kinds().toArray(new Kind<?>[config.kinds().size()]);
+    }
+
+    public void shutdown() {
+        stop = true;
+        synchronized (watchKeysToConfig) {
+            for (WatchKey key : watchKeysToConfig.keySet()) {
+                key.cancel();
+            }
+            watchKeysToConfig.clear();
+        }
+        try {
+            if (watchService != null) {
+                watchService.close();
+                watchService = null;
+
+            }
+        } catch (IOException e) {
+            LOGGER.error("Exception while WatcheService::close on shutdown", e);
+        }
     }
 
     private void loopWatchUntilStop() {
         try {
             while (!stop) {
-                WatchKey key = watcheService.take();
+                WatchKey key = watchService.take();
 
                 if (key == null) {
                     // no events, try again
                     continue;
                 }
 
-                Path basePath = basePathFromWatchkey(key);
-
                 for (WatchEvent<?> event : key.pollEvents()) {
-                    handleEvent(event, basePath);
+
+                    rwl.readLock().lock();
+                    WatchKeyConfig config = watchKeysToConfig.get(key);
+                    rwl.readLock().unlock();
+
+                    handleEvent(event, config);
+
                 }
 
                 boolean resetValid = key.reset();
                 if (!resetValid) {
-                    LOGGER.warn("invalid WatchKey while reset. basePath: {}  key: {}", basePath, key);
+                    LOGGER.warn("invalid WatchKey while reset.  watchable: {}", key.watchable());
                 }
             }
-        } catch (ClosedWatchServiceException e) {
+        } catch (
+
+        ClosedWatchServiceException e) {
             LOGGER.warn("watcheService::take is interrupted, by closing WatchService");
         } catch (InterruptedException e) {
             shutdown();
@@ -191,56 +213,58 @@ class FileWatcherRunable implements Runnable {
         }
     }
 
-    private void handleEvent(WatchEvent<?> event, Path basePath) {
+    private void handleEvent(WatchEvent<?> event, WatchKeyConfig config) {
         WatchEvent.Kind<?> kind = event.kind();
         if (kind == StandardWatchEventKinds.OVERFLOW) {
             return;// not registerable
         }
 
+        if (!(event.context() instanceof Path)) {
+            return; // not an WatchEvent<Path>
+        }
+
+        @SuppressWarnings("unchecked")
         WatchEvent<Path> watchEvent = (WatchEvent<Path>) event;
 
         Path filename = watchEvent.context();
 
-        Path resolvedFile = basePath.resolve(filename);
+        Path resolvedFile = config.path().resolve(filename);
 
-        if (recursive && (kind == StandardWatchEventKinds.ENTRY_CREATE)) {
+        if (config.recursive() && (kind == StandardWatchEventKinds.ENTRY_CREATE)) {
             try {
                 if (Files.isDirectory(resolvedFile, LinkOption.NOFOLLOW_LINKS)) {
-                    registerPathWithSubDirs(resolvedFile);
+                    registerPathWithSubDirs(new WatchKeyConfig(config.listener(), resolvedFile, config.kinds(),
+                            config.oPattern(), config.recursive()));
                 }
             } catch (IOException e) {
-                LOGGER.error("Errown while register Path With Subdirs", e);
+                LOGGER.error("Exception while register Path with sub-dirs", e);
             }
         }
 
-        oPattern.ifPresent(pattern -> {
+        config.oPattern().ifPresent(pattern -> {
             Matcher matcher = pattern.matcher(resolvedFile.toString());
             if (matcher.matches()) {
-                listener.handlePathEvent(resolvedFile, watchEvent.kind());
+                config.listener().handlePathEvent(resolvedFile, watchEvent.kind());
             }
         });
 
     }
 
-    private Path basePathFromWatchkey(WatchKey key) {
-        synchronized (watchKeys) {
-            return watchKeys.get(key);
-        }
-    }
-
-    private void registerPathWithSubDirs(final Path baseDirectory) throws IOException {
-        Files.walkFileTree(baseDirectory, new SimpleFileVisitor<Path>() {
+    private void registerPathWithSubDirs(WatchKeyConfig config) throws IOException {
+        Files.walkFileTree(config.path(), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult preVisitDirectory(Path currentDirectory, BasicFileAttributes attrs)
                     throws IOException {
-                registerPath(currentDirectory);
+                registerPath(new WatchKeyConfig(config.listener(), currentDirectory, config.kinds(), config.oPattern(),
+                        config.recursive()));
                 return FileVisitResult.CONTINUE;
             }
         });
 
     }
 
-    public Path getObservedPath() {
-        return observedPath;
+    private void unregistertKey(WatchKey watchKey) {
+        watchKey.cancel();
+        watchKeysToConfig.remove(watchKey);
     }
 }

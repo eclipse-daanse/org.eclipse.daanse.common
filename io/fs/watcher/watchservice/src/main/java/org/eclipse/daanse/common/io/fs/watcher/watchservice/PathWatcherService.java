@@ -17,46 +17,67 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherListener;
 import org.osgi.service.component.ComponentServiceObjects;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ServiceScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Component(immediate = true, scope = ServiceScope.SINGLETON)
+@Component(scope = ServiceScope.SINGLETON)
 public class PathWatcherService {
 
-    private final Map<FileSystemWatcherListener, FileWatcherRunable> listeners = Collections
-            .synchronizedMap(new HashMap<>());
+    private static final Logger LOGGER = LoggerFactory.getLogger(PathWatcherService.class);
 
     private final Map<ComponentServiceObjects<FileSystemWatcherListener>, FileSystemWatcherListener> listenersCSO = Collections
             .synchronizedMap(new HashMap<>());
 
+    private FileWatcherRunable fileWatcherRunable;
+
+    private Thread virtualThread;
+
+    @Activate
+    public void activate() throws IOException {
+        fileWatcherRunable = new FileWatcherRunable();
+        virtualThread = Thread.ofVirtual().start(fileWatcherRunable);
+    }
+
+    @Deactivate
+    public void deActivate() {
+        fileWatcherRunable.shutdown();
+        virtualThread.interrupt();
+    }
+
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-    void bindPathListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO, Map<String, Object> map)
-            throws IOException {
+    void bindFileSystemWatcherListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO,
+            Map<String, Object> map) throws IOException {
 
         FileSystemWatcherListener listener = listenerCSO.getService();
-        FileWatcherRunable fwrRunable = new FileWatcherRunable(listener, map);
-        String name = FileWatcherRunable.class.getSimpleName() + " " + fwrRunable.getObservedPath();
-        Thread.ofVirtual().name(name).start(fwrRunable);
-        listeners.put(listener, fwrRunable);
         listenersCSO.put(listenerCSO, listener);
+
+        if (listener == null) {
+            LOGGER.warn("Could not get FileSystemWatcherListener-Service of: {}, props: {}", listenerCSO, map);
+            return;
+        }
+        fileWatcherRunable.addFileWatcherRunable(listener, map);
 
     }
 
-    void unbindPathListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO) {
+    void unbindFileSystemWatcherListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO) {
         FileSystemWatcherListener listener = listenersCSO.remove(listenerCSO);
-        listenerCSO.ungetService(listener);
-        FileWatcherRunable runable = listeners.remove(listener);
-        if (runable != null) {
-            runable.shutdown();
+
+        if (listener == null) {
+            LOGGER.warn("Service not handled: {}", listenerCSO);
+            return;
         }
+        listenerCSO.ungetService(listener);
+        fileWatcherRunable.remove(listener);
     }
 
 }

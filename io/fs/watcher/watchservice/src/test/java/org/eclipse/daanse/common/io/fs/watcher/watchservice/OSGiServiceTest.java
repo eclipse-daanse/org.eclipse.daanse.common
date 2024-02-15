@@ -21,6 +21,7 @@ import static org.osgi.test.common.dictionary.Dictionaries.asDictionary;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
+import java.time.Duration;
 import java.util.Map;
 
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherListener;
@@ -28,11 +29,11 @@ import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherWhiteboardCo
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.annotations.RequireConfigurationAdmin;
 import org.osgi.service.component.annotations.RequireServiceComponentRuntime;
 import org.osgi.test.common.annotation.InjectBundleContext;
 import org.osgi.test.junit5.context.BundleContextExtension;
-import org.slf4j.LoggerFactory;
 
 @RequireServiceComponentRuntime
 @RequireConfigurationAdmin
@@ -58,20 +59,18 @@ class OSGiServiceTest {
                 path.toAbsolutePath().toString(), FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_RECURSIVE,
                 "true");
 
-        bc.registerService(FileSystemWatcherListener.class, listener, asDictionary(map));
+        ServiceRegistration<FileSystemWatcherListener> sreg = bc.registerService(FileSystemWatcherListener.class,
+                listener, asDictionary(map));
 
         await().atMost(ofSeconds(2)).until(() -> listener.getInitialPaths().size() == 1);
 
         assertThat(listener.getInitialPaths()).hasSize(1);
         assertThat(listener.getInitialPaths().poll()).isEqualTo(file_preexist);
 
-        Thread.sleep(1000);
         Path file_created = Files.createTempFile(path, "created1", ".txt");// create
         Files.writeString(file_created, "2");// modify
         Files.delete(file_preexist);// delete
         Files.delete(file_created);// delete
-
-        Thread.sleep(1000);
 
         await().atMost(ofSeconds(2)).until(() -> listener.getEvents().size() == 4);
 
@@ -89,9 +88,10 @@ class OSGiServiceTest {
         assertThat(listener.getEvents().poll().getValue()).isEqualTo(StandardWatchEventKinds.ENTRY_DELETE);
 
         Path dir1 = Files.createDirectory(path.resolve("dir1"));// create dir
+        await().atMost(ofSeconds(2)).pollDelay(Duration.ofMillis(500)).pollInterval(Duration.ofMillis(500))
+                .until(() -> listener.getEvents().size() == 1);
 
-        Thread.sleep(2000);// TODO: file not as event when no wait
-        Path f1InDir1 = Files.createTempFile(dir1, "f1", ".txt");// create
+        Path f1InDir1 = Files.createTempFile(dir1, "af1", ".txt");// create
 
         await().atMost(ofSeconds(2)).until(() -> listener.getEvents().size() == 2);
 
@@ -101,7 +101,10 @@ class OSGiServiceTest {
 
         assertThat(listener.getEvents().peek().getKey()).isEqualTo(f1InDir1);
         assertThat(listener.getEvents().poll().getValue()).isEqualTo(StandardWatchEventKinds.ENTRY_CREATE);
-        LoggerFactory.getLogger(OSGiServiceTest.class).warn("FOOOOOOOOOOOOOOOOO");
+
+        sreg.unregister();
+        Files.createTempFile(dir1, "wf2", ".txt");// create
+        await().pollDelay(ofSeconds(1)).atMost(ofSeconds(2)).until(() -> listener.getEvents().isEmpty());
 
     }
 
