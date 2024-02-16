@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.ServiceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(scope = ServiceScope.SINGLETON)
+@Component(immediate = true, scope = ServiceScope.SINGLETON)
 public class PathWatcherService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathWatcherService.class);
