@@ -43,7 +43,7 @@ public class PathWatcherService {
     private Thread virtualThread;
 
     @Activate
-    public void activate() throws IOException {
+    public PathWatcherService() throws IOException {
         fileWatcherRunable = new FileWatcherRunable();
         virtualThread = Thread.ofVirtual().start(fileWatcherRunable);
     }
