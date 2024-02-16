@@ -30,33 +30,51 @@ import org.osgi.service.component.annotations.ServiceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * {@link ReferenceCardinality#AT_LEAST_ONE} lets the PathWatcherService be
+ * activated only if it is really needed.
+ */
 @Component(immediate = true, scope = ServiceScope.SINGLETON)
 public class PathWatcherService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathWatcherService.class);
+    private static final String THREAD_NAME = FileWatcherRunable.class.getName().substring(12);
 
     private final Map<ComponentServiceObjects<FileSystemWatcherListener>, FileSystemWatcherListener> listenersCSO = Collections
             .synchronizedMap(new HashMap<>());
 
     private FileWatcherRunable fileWatcherRunable;
-
     private Thread virtualThread;
 
-    @Activate
     public PathWatcherService() throws IOException {
+        LOGGER.info("constrcutor");
         fileWatcherRunable = new FileWatcherRunable();
-        virtualThread = Thread.ofVirtual().start(fileWatcherRunable);
+        virtualThread = Thread.ofVirtual().name(THREAD_NAME).unstarted(fileWatcherRunable);
+        virtualThread.start();
+    }
+
+    @Activate
+    public void activate() {
+        LOGGER.info("activate");
+
     }
 
     @Deactivate
     public void deActivate() {
+        LOGGER.info("deactivate - start");
+
         fileWatcherRunable.shutdown();
         virtualThread.interrupt();
+
+        LOGGER.info("deactivate - end");
+
     }
 
-    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
+    @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
     void bindFileSystemWatcherListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO,
             Map<String, Object> map) throws IOException {
+
+        LOGGER.info("bind FileSystemWatcherListener with properties: {}", map);
 
         FileSystemWatcherListener listener = listenerCSO.getService();
         listenersCSO.put(listenerCSO, listener);
@@ -69,15 +87,18 @@ public class PathWatcherService {
 
     }
 
-    void unbindFileSystemWatcherListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO) {
+    void unbindFileSystemWatcherListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO,
+            Map<String, Object> map) {
         FileSystemWatcherListener listener = listenersCSO.remove(listenerCSO);
+
+        LOGGER.info("unbind FileSystemWatcherListener with properties: {}", map);
 
         if (listener == null) {
             LOGGER.warn("Service not handled: {}", listenerCSO);
             return;
         }
         listenerCSO.ungetService(listener);
-        fileWatcherRunable.remove(listener);
+        fileWatcherRunable.removeFileWatcherRunable(listener);
     }
 
 }

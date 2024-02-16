@@ -68,9 +68,14 @@ class FileWatcherRunable implements Runnable {
     @Override
     public void run() {
 
+        LOGGER.info("run - start");
         loopWatchUntilStop();
 
+        LOGGER.info("run - after loop.");
+
         shutdown();
+        LOGGER.info("run - end");
+
     }
 
     void addFileWatcherRunable(FileSystemWatcherListener listener, Map<String, Object> props) throws IOException {
@@ -123,6 +128,8 @@ class FileWatcherRunable implements Runnable {
         listener.handleBasePath(observedPath);
         WatchKeyConfig config = new WatchKeyConfig(listener, observedPath, List.copyOf(kinds), oPattern, recursive);
 
+        LOGGER.info("Configuration for Listener processed: {}", config);
+
         if (recursive) {
             registerPathWithSubDirs(config);
         } else {
@@ -131,7 +138,7 @@ class FileWatcherRunable implements Runnable {
 
     }
 
-    void remove(FileSystemWatcherListener listener) {
+    void removeFileWatcherRunable(FileSystemWatcherListener listener) {
 
         watchKeysToConfig.entrySet().stream().filter(e -> listener.equals(e.getValue().listener())).map(Entry::getKey)
                 .forEach(this::unregistertKey);
@@ -141,6 +148,8 @@ class FileWatcherRunable implements Runnable {
     private void registerPath(WatchKeyConfig config) throws IOException {
 
         Path path = config.path();
+
+        LOGGER.info("register Path: {}", path);
         try (Stream<Path> stream = Files.list(path)) {
             List<Path> currentPaths = stream.toList();
             FileSystemWatcherListener listener = config.listener();
@@ -159,15 +168,20 @@ class FileWatcherRunable implements Runnable {
     }
 
     public void shutdown() {
+        LOGGER.info("shutdown - start");
+
         stop = true;
         synchronized (watchKeysToConfig) {
             for (WatchKey key : watchKeysToConfig.keySet()) {
+                LOGGER.debug("cancel watchkey: {}", key);
                 key.cancel();
             }
             watchKeysToConfig.clear();
         }
         try {
             if (watchService != null) {
+
+                LOGGER.debug("close watchService");
                 watchService.close();
                 watchService = null;
 
@@ -175,6 +189,8 @@ class FileWatcherRunable implements Runnable {
         } catch (IOException e) {
             LOGGER.error("Exception while WatcheService::close on shutdown", e);
         }
+        LOGGER.info("shutdown - end");
+
     }
 
     private void loopWatchUntilStop() {
@@ -183,6 +199,7 @@ class FileWatcherRunable implements Runnable {
                 WatchKey key = watchService.take();
 
                 if (key == null) {
+                    LOGGER.debug("the taken watchKey is null");
                     // no events, try again
                     continue;
                 }
@@ -214,12 +231,15 @@ class FileWatcherRunable implements Runnable {
     }
 
     private void handleEvent(WatchEvent<?> event, WatchKeyConfig config) {
+        LOGGER.debug("handle event: {}", event);
+
         WatchEvent.Kind<?> kind = event.kind();
         if (kind == StandardWatchEventKinds.OVERFLOW) {
             return;// not registerable
         }
 
         if (!(event.context() instanceof Path)) {
+            LOGGER.warn("handles event is not of type Path: {}", event.context());
             return; // not an WatchEvent<Path>
         }
 
@@ -251,7 +271,11 @@ class FileWatcherRunable implements Runnable {
     }
 
     private void registerPathWithSubDirs(WatchKeyConfig config) throws IOException {
-        Files.walkFileTree(config.path(), new SimpleFileVisitor<Path>() {
+        Path path = config.path();
+
+        LOGGER.info("register subdirs for: {}", path);
+
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult preVisitDirectory(Path currentDirectory, BasicFileAttributes attrs)
                     throws IOException {
@@ -264,7 +288,10 @@ class FileWatcherRunable implements Runnable {
     }
 
     private void unregistertKey(WatchKey watchKey) {
+        LOGGER.info("unregister watchkey: {}", watchKey);
         watchKey.cancel();
-        watchKeysToConfig.remove(watchKey);
+        WatchKeyConfig watchKeyConfig = watchKeysToConfig.remove(watchKey);
+        LOGGER.info("unregisterd watchkey for: {}", watchKeyConfig);
+
     }
 }
