@@ -2,7 +2,7 @@ name: Editor Config format check
 
 on:
   pull_request:
-    branches: [main]
+    branches: [ "main" , "dashIPCheck/requestIpLab"]
 
 permissions:
   contents: read
