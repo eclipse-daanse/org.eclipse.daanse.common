@@ -17,10 +17,10 @@
   <parent>
     <groupId>org.eclipse.daanse</groupId>
     <artifactId>org.eclipse.daanse.common.jakarta.servlet</artifactId>
-    <version>${revision.org.eclipse.daanse.common.jakarta.servlet}</version>
+    <version>${revision}</version>
   </parent>
   <artifactId>org.eclipse.daanse.common.jakarta.servlet.soap</artifactId>
-  <version>${revision.org.eclipse.daanse.common.jakarta.servlet.soap}</version>
+  <version>0.0.1-SNAPSHOT</version>
 
 
   <dependencies>

@@ -17,10 +17,9 @@
   <parent>
     <groupId>org.eclipse.daanse</groupId>
     <artifactId>org.eclipse.daanse.common.jakarta</artifactId>
-    <version>${revision.org.eclipse.daanse.common.jakarta}</version>
+    <version>${revision}</version>
   </parent>
   <artifactId>org.eclipse.daanse.common.jakarta.servlet</artifactId>
-  <version>${revision.org.eclipse.daanse.common.jakarta.servlet}</version>
 
   <packaging>pom</packaging>
   <modules>

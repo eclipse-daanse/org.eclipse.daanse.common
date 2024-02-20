@@ -11,4 +11,7 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jakarta.servlet.soap;
+@org.osgi.annotation.bundle.Export
+@org.osgi.annotation.versioning.Version("0.0.1")
+
+package org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api;

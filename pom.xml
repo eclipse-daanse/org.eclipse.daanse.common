@@ -17,7 +17,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.eclipse.daanse</groupId>
   <artifactId>org.eclipse.daanse.common</artifactId>
-  <version>${revision.org.eclipse.daanse.common}</version>
+  <version>${revision}</version>
   <packaging>pom</packaging>
   <name>Eclipse-Daanse common</name>
   <url>https://www.daanse.org</url>
@@ -60,7 +60,7 @@
     <url>https://github.com/eclipse-daanse/org.eclipse.daanse.common/issues</url>
   </issueManagement>
   <properties>
-    <!-- all revisions -->
+    <revision>0.0.1-SNAPSHOT</revision>
 
     <project.build.outputTimestamp>1980-02-01T00:00:00Z</project.build.outputTimestamp>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -106,7 +106,7 @@
     <osgi.promise.compile.version>1.0.0</osgi.promise.compile.version>
     <osgi.function.version>1.2.0</osgi.function.version>
     <osgi.promise.version>1.2.0</osgi.promise.version>
-    <org.osgi.test.version>1.2.1</org.osgi.test.version>
+    <org.osgi.test.version>1.3.0-SNAPSHOT</org.osgi.test.version>
     <logback.version>1.5.0</logback.version>
     <aries.spifly.version>1.3.7</aries.spifly.version>
   </properties>
@@ -155,11 +155,9 @@
                 Bundle-Copyright: Copyright (c) (${now;YYYY}) Contributors to the Eclipse Foundation.
                 Git-Descriptor: ${system-allow-fail;git describe --dirty --always --abbrev=9}
                 Git-SHA: ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
+                SPDX-License-Identifier: ${project.licenses[0].name}
                 -noextraheaders: true
                 -reproducible: true
-                -dsannotations-options: felixExtensions
-
-                SPDX-License-Identifier: ${project.licenses[0].name}
                 ]]>
                 </bnd>
               </configuration>
@@ -173,10 +171,11 @@
                 <bndfile>tests.bnd</bndfile>
                 <bnd>
                   <![CDATA[
+              Test-Cases: ${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable;CONCRETE}
               -dsannotations-options: felixExtensions
+              -fixupmessages: *for this fragment/require bundle cannot be found on the classpath
               -noextraheaders: true
               -noimportjava: true
-              Test-Cases: ${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable;CONCRETE}
               ]]>
                 </bnd>
                 <artifactFragment>true</artifactFragment>
@@ -781,6 +780,7 @@
   <modules>
     <module>io</module>
     <module>jakarta</module>
+    <module>jdbc</module>
   </modules>
   <profiles>
     <profile>

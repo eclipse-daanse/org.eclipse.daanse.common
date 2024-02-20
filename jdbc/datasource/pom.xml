@@ -16,13 +16,26 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.eclipse.daanse</groupId>
-    <artifactId>org.eclipse.daanse.common.io.fs</artifactId>
+    <artifactId>org.eclipse.daanse.common.jdbc</artifactId>
     <version>${revision}</version>
   </parent>
-  <artifactId>org.eclipse.daanse.common.io.fs.watcher</artifactId>
+  <artifactId>org.eclipse.daanse.common.jdbc.datasource</artifactId>
   <packaging>pom</packaging>
   <modules>
-    <module>api</module>
-    <module>watchservice</module>
+    <module>metatype</module>
   </modules>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.metatype.annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.component.annotations</artifactId>
+    </dependency>
+
+  </dependencies>
 </project>

@@ -12,3 +12,11 @@
 *   Stefan Bischof (bipolis.org) - initial
 */
 package org.eclipse.daanse.common.jakarta.servlet.soap;
+
+public class Test {
+
+    @org.junit.jupiter.api.Test
+    void testName() throws Exception {
+
+    }
+}
