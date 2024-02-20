@@ -20,6 +20,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -B org.eclipse.dash:license-tool-plugin:license-check -Dlicenses-check -Ddash.fail=true -Ddash.summary=DEPENDENCIES -DexcludeArtifactIds=$EXCLUDED_ARTIFACTS -P eclipse-licenses-check --file pom.xml
       env:
         EXCLUDED_ARTIFACTS: 'bugsnag'
+        DASH_IPLAB_TOKEN: ${{ secrets.DASH_IPLAB_TOKEN }}
+      run: mvn -B org.eclipse.dash:license-tool-plugin:license-check -Dlicenses-check -Ddash.fail=true -Ddash.summary=DEPENDENCIES -DexcludeArtifactIds=$EXCLUDED_ARTIFACTS -Ddash.projectId=technology.daanse -Ddash.iplab.token="$DASH_IPLAB_TOKEN" -P eclipse-licenses-check --file pom.xml
