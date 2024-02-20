@@ -15,6 +15,7 @@ package org.eclipse.daanse.common.jakarta.servlet.soap;
 
 import static org.eclipse.daanse.common.jakarta.servlet.soap.SoapServletHelper.setMimeHeadersToResponse;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -134,13 +135,15 @@ public abstract class AbstractSoapServlet extends HttpServlet {
             SOAPMessage requestMessage = createSoapMessageRequest(servletRequest);
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("created SOAPMessage for request {}", requestMessage);
+                ByteArrayOutputStream baos = getOutputStreamOfSoapMessage(requestMessage);
+                LOGGER.debug("SOAPMessage in: {}", baos.toString());
             }
 
             SOAPMessage responseMessage = onMessage(requestMessage);
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("from  onMessage  revieved SOAPMessage for response {}", requestMessage);
+                ByteArrayOutputStream baos = getOutputStreamOfSoapMessage(responseMessage);
+                LOGGER.debug("SOAPMessage out: {}", baos.toString());
             }
 
             writeSoapMessageToServletResponse(servletResponse, responseMessage);
@@ -148,6 +151,13 @@ public abstract class AbstractSoapServlet extends HttpServlet {
             LOGGER.error(EXCEPTION_MSG_POST, ex);
             throw new ServletException(EXCEPTION_MSG_POST);
         }
+    }
+
+    private ByteArrayOutputStream getOutputStreamOfSoapMessage(SOAPMessage responseMessage)
+            throws SOAPException, IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        responseMessage.writeTo(baos);
+        return baos;
     }
 
     private void writeSoapMessageToServletResponse(HttpServletResponse servletResponse, SOAPMessage responseMessage)
