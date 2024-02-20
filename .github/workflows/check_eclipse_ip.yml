@@ -2,9 +2,9 @@ name: Eclipse-Dash IP-Check
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" , "dashIPCheck/requestIpLab"]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" , "dashIPCheck/requestIpLab"]
 
 jobs:
   build:
