@@ -17,10 +17,10 @@
     <parent>
         <groupId>org.eclipse.daanse</groupId>
         <artifactId>org.eclipse.daanse.common.io.fs.watcher</artifactId>
-        <version>${revision.org.eclipse.daanse.common.io.fs.watcher}</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>org.eclipse.daanse.common.io.fs.watcher.api</artifactId>
-    <version>${revision.org.eclipse.daanse.common.io.fs.watcher.api}</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <dependencies>
 

@@ -26,7 +26,6 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ServiceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * {@link ReferenceCardinality#AT_LEAST_ONE} lets the PathWatcherService be
  * activated only if it is really needed.
  */
-@Component(immediate = true, scope = ServiceScope.SINGLETON)
+@Component(service = {})
 public class PathWatcherService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathWatcherService.class);

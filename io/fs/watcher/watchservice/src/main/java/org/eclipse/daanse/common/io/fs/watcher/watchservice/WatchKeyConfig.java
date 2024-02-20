@@ -21,6 +21,6 @@ import java.util.regex.Pattern;
 
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherListener;
 
-public record WatchKeyConfig(FileSystemWatcherListener listener, Path path, List<Kind<?>> kinds,
-        Optional<Pattern> oPattern, boolean recursive) {
+record WatchKeyConfig(FileSystemWatcherListener listener, Path path, List<Kind<?>> kinds, Optional<Pattern> oPattern,
+        boolean recursive) {
 }

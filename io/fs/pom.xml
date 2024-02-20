@@ -17,13 +17,11 @@
   <parent>
     <groupId>org.eclipse.daanse</groupId>
     <artifactId>org.eclipse.daanse.common.io</artifactId>
-    <version>${revision.org.eclipse.daanse.common.io}</version>
+    <version>${revision}</version>
   </parent>
   <artifactId>org.eclipse.daanse.common.io.fs</artifactId>
   <packaging>pom</packaging>
   <description>IO FileSystem</description>
-
-  <version>${revision.org.eclipse.daanse.common.io.fs}</version>
 
   <modules>
     <module>watcher</module>

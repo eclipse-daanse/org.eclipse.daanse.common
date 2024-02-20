@@ -17,11 +17,10 @@
   <parent>
     <groupId>org.eclipse.daanse</groupId>
     <artifactId>org.eclipse.daanse.common</artifactId>
-    <version>${revision.org.eclipse.daanse.common}</version>
+    <version>${revision}</version>
   </parent>
   <artifactId>org.eclipse.daanse.common.io</artifactId>
   <packaging>pom</packaging>
-  <version>${revision.org.eclipse.daanse.common.io}</version>
   <modules>
     <module>fs</module>
   </modules>
