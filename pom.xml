@@ -780,6 +780,7 @@
   </dependencies>
   <modules>
     <module>io</module>
+    <module>jakarta</module>
   </modules>
   <profiles>
     <profile>
