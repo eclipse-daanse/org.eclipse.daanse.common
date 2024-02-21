@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherListener;
 import org.osgi.service.component.ComponentServiceObjects;
@@ -26,6 +29,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.runtime.ServiceComponentRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,25 +41,27 @@ import org.slf4j.LoggerFactory;
 public class PathWatcherService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathWatcherService.class);
-    private static final String THREAD_NAME = FileWatcherRunable.class.getName().substring(12);
 
     private final Map<ComponentServiceObjects<FileSystemWatcherListener>, FileSystemWatcherListener> listenersCSO = Collections
             .synchronizedMap(new HashMap<>());
 
+    private CountDownLatch latchFileWatcherRunableReady = new CountDownLatch(1);
     private FileWatcherRunable fileWatcherRunable;
-    private Thread virtualThread;
 
+    /**
+     * {@link Activate} Annotation on Constructor forces the
+     * {@link ServiceComponentRuntime} to create Instance before Binding a
+     * {@link FileSystemWatcherListener}
+     *
+     * @throws IOException
+     */
+    @Activate
     public PathWatcherService() throws IOException {
         LOGGER.info("constrcutor");
         fileWatcherRunable = new FileWatcherRunable();
-        virtualThread = Thread.ofVirtual().name(THREAD_NAME).unstarted(fileWatcherRunable);
-        virtualThread.start();
-    }
-
-    @Activate
-    public void activate() {
-        LOGGER.info("activate");
-
+        Executors.newVirtualThreadPerTaskExecutor().execute(fileWatcherRunable);
+        LOGGER.info("activated");
+        latchFileWatcherRunableReady.getCount();
     }
 
     @Deactivate
@@ -63,7 +69,6 @@ public class PathWatcherService {
         LOGGER.info("deactivate - start");
 
         fileWatcherRunable.shutdown();
-        virtualThread.interrupt();
 
         LOGGER.info("deactivate - end");
 
@@ -71,7 +76,7 @@ public class PathWatcherService {
 
     @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
     void bindFileSystemWatcherListener(ComponentServiceObjects<FileSystemWatcherListener> listenerCSO,
-            Map<String, Object> map) throws IOException {
+            Map<String, Object> map) throws IOException, InterruptedException {
 
         LOGGER.info("bind FileSystemWatcherListener with properties: {}", map);
 
@@ -81,6 +86,13 @@ public class PathWatcherService {
         if (listener == null) {
             LOGGER.warn("Could not get FileSystemWatcherListener-Service of: {}, props: {}", listenerCSO, map);
             return;
+        }
+        try {
+            latchFileWatcherRunableReady.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.error("FileWatcherRunable not ready: {}, props: {}", listenerCSO, map);
+            throw new IllegalStateException("FileWatcherRunable not ready", e);
+
         }
         fileWatcherRunable.addFileWatcherRunable(listener, map);
 

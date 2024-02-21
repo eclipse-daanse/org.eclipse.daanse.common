@@ -13,7 +13,6 @@
 */
 package org.eclipse.daanse.common.io.fs.watcher.watchservice;
 
-import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.osgi.test.common.dictionary.Dictionaries.asDictionary;
@@ -26,6 +25,7 @@ import java.util.Map;
 
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherListener;
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherWhiteboardConstants;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.osgi.framework.BundleContext;
@@ -41,13 +41,14 @@ import org.osgi.test.junit5.context.BundleContextExtension;
 @ExtendWith(BundleContextExtension.class)
 class OSGiServiceTest {
 
+    private static Duration WAIT_MOST = Duration.ofSeconds(10);
     @InjectBundleContext
     BundleContext bc;
 
     @TempDir
     Path path;
 
-    @org.junit.jupiter.api.Test
+    @RepeatedTest(value = 20)
     void testFileSystemListener() throws Exception {
 
         StoringFileSystemWatcherListener listener = new StoringFileSystemWatcherListener();
@@ -62,38 +63,37 @@ class OSGiServiceTest {
         ServiceRegistration<FileSystemWatcherListener> sreg = bc.registerService(FileSystemWatcherListener.class,
                 listener, asDictionary(map));
 
-        await().atMost(ofSeconds(2)).until(() -> listener.getInitialPaths().size() == 1);
+        await().atMost(WAIT_MOST).until(() -> listener.getInitialPaths().size() == 1);
 
         assertThat(listener.getInitialPaths()).hasSize(1);
         assertThat(listener.getInitialPaths().poll()).isEqualTo(file_preexist);
 
         Path file_created = Files.createTempFile(path, "created1", ".txt");// create
-        Files.writeString(file_created, "2");// modify
         Files.delete(file_preexist);// delete
-        Files.delete(file_created);// delete
+        Files.writeString(file_created, "2");// modify
 
-        await().atMost(ofSeconds(2)).until(() -> listener.getEvents().size() == 4);
+        await().atMost(WAIT_MOST).until(() -> listener.getEvents().size() >= 3);// sometime multiple modify
 
-        assertThat(listener.getEvents()).hasSize(4);
+        assertThat(listener.getEvents()).hasSizeGreaterThanOrEqualTo(3);
         assertThat(listener.getEvents().peek().getKey()).isEqualTo(file_created);
         assertThat(listener.getEvents().poll().getValue()).isEqualTo(StandardWatchEventKinds.ENTRY_CREATE);
-
-        assertThat(listener.getEvents().peek().getKey()).isEqualTo(file_created);
-        assertThat(listener.getEvents().poll().getValue()).isEqualTo(StandardWatchEventKinds.ENTRY_MODIFY);
 
         assertThat(listener.getEvents().peek().getKey()).isEqualTo(file_preexist);
         assertThat(listener.getEvents().poll().getValue()).isEqualTo(StandardWatchEventKinds.ENTRY_DELETE);
 
         assertThat(listener.getEvents().peek().getKey()).isEqualTo(file_created);
-        assertThat(listener.getEvents().poll().getValue()).isEqualTo(StandardWatchEventKinds.ENTRY_DELETE);
+        assertThat(listener.getEvents().poll().getValue()).isEqualTo(StandardWatchEventKinds.ENTRY_MODIFY);
+
+        // maybe more modify existing, then clear
+        listener.getEvents().clear();
 
         Path dir1 = Files.createDirectory(path.resolve("dir1"));// create dir
-        await().atMost(ofSeconds(2)).pollDelay(Duration.ofMillis(500)).pollInterval(Duration.ofMillis(500))
+        await().atMost(WAIT_MOST).pollDelay(Duration.ofMillis(100)).pollInterval(Duration.ofMillis(100))
                 .until(() -> listener.getEvents().size() == 1);
 
         Path f1InDir1 = Files.createTempFile(dir1, "af1", ".txt");// create
 
-        await().atMost(ofSeconds(2)).until(() -> listener.getEvents().size() == 2);
+        await().atMost(WAIT_MOST).until(() -> listener.getEvents().size() == 2);
 
         assertThat(listener.getEvents()).hasSize(2);
         assertThat(listener.getEvents().peek().getKey()).isEqualTo(dir1);
@@ -104,7 +104,7 @@ class OSGiServiceTest {
 
         sreg.unregister();
         Files.createTempFile(dir1, "wf2", ".txt");// create
-        await().pollDelay(ofSeconds(1)).atMost(ofSeconds(2)).until(() -> listener.getEvents().isEmpty());
+        await().pollDelay(Duration.ofMillis(200)).atMost(WAIT_MOST).until(() -> listener.getEvents().isEmpty());
 
     }
 

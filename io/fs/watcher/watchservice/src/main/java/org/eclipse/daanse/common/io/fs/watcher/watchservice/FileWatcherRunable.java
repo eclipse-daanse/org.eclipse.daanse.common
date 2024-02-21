@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,8 +56,9 @@ class FileWatcherRunable implements Runnable {
     private final Map<WatchKey, WatchKeyConfig> watchKeysToConfig = new ConcurrentHashMap<>();
 
     final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+    private AtomicBoolean activated = new AtomicBoolean(false);
 
-    private boolean stop;
+    private AtomicBoolean stoped = new AtomicBoolean(false);
 
     public FileWatcherRunable() throws IOException {
 
@@ -68,6 +70,7 @@ class FileWatcherRunable implements Runnable {
     @Override
     public void run() {
 
+        activated.set(true);
         LOGGER.info("run - start");
         loopWatchUntilStop();
 
@@ -125,8 +128,15 @@ class FileWatcherRunable implements Runnable {
         String sPath = emptyPath ? "" : oPath.toString();
         Path observedPath = fileSystem.getPath(sPath).toAbsolutePath();
 
-        listener.handleBasePath(observedPath);
         WatchKeyConfig config = new WatchKeyConfig(listener, observedPath, List.copyOf(kinds), oPattern, recursive);
+
+        if (!activated.get()) {
+            String sException = "FileWatcherRunable not activated: " + config;
+            LOGGER.error(null);
+            throw new IllegalStateException(sException);
+        }
+
+        listener.handleBasePath(observedPath);
 
         LOGGER.info("Configuration for Listener processed: {}", config);
 
@@ -170,7 +180,7 @@ class FileWatcherRunable implements Runnable {
     public void shutdown() {
         LOGGER.info("shutdown - start");
 
-        stop = true;
+        stoped.set(true);
         synchronized (watchKeysToConfig) {
             for (WatchKey key : watchKeysToConfig.keySet()) {
                 LOGGER.debug("cancel watchkey: {}", key);
@@ -195,7 +205,7 @@ class FileWatcherRunable implements Runnable {
 
     private void loopWatchUntilStop() {
         try {
-            while (!stop) {
+            while (!stoped.get()) {
                 WatchKey key = watchService.take();
 
                 if (key == null) {
@@ -204,8 +214,15 @@ class FileWatcherRunable implements Runnable {
                     continue;
                 }
 
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("new WatchKey: {}  ; with watchable {}", key, key.watchable());
+                }
                 for (WatchEvent<?> event : key.pollEvents()) {
 
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("new WatchEvent to handleEvent: {} , kind: {}, context: {} , count: {}", event,
+                                event.kind(), event.context(), event.count());
+                    }
                     rwl.readLock().lock();
                     WatchKeyConfig config = watchKeysToConfig.get(key);
                     rwl.readLock().unlock();
@@ -235,6 +252,7 @@ class FileWatcherRunable implements Runnable {
 
         WatchEvent.Kind<?> kind = event.kind();
         if (kind == StandardWatchEventKinds.OVERFLOW) {
+            LOGGER.warn("handles event of type OVERFLOW Path: {}", event.context());
             return;// not registerable
         }
 
