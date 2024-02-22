@@ -35,9 +35,11 @@ import org.osgi.test.junit5.service.ServiceExtension;
 public class H2DataSourceTest {
 
     @Test
-    void noConfigurationNoServiceTest(@InjectService(cardinality = 0) ServiceAware<DataSource> saDataSource, //
-            @InjectService(cardinality = 0) ServiceAware<XADataSource> saXaDataSource, //
-            @InjectService(cardinality = 0) ServiceAware<ConnectionPoolDataSource> saCpDataSource) throws Exception {
+    void noConfigurationNoServiceTest(
+            @InjectService(cardinality = 0, timeout = 500) ServiceAware<DataSource> saDataSource, //
+            @InjectService(cardinality = 0, timeout = 500) ServiceAware<XADataSource> saXaDataSource, //
+            @InjectService(cardinality = 0, timeout = 500) ServiceAware<ConnectionPoolDataSource> saCpDataSource)
+            throws Exception {
 
         assertThat(saDataSource.getServices()).isEmpty();
         assertThat(saXaDataSource.getServices()).isEmpty();
@@ -47,9 +49,10 @@ public class H2DataSourceTest {
 
     @Test
     @WithFactoryConfiguration(factoryPid = Constants.PID_DATASOURCE, name = "1", location = "?")
-    void serviceWithConfigurationTest(@InjectService ServiceAware<DataSource> serviceAwareDataSource, //
-            @InjectService ServiceAware<XADataSource> serviceAwareXaDataSource, //
-            @InjectService ServiceAware<ConnectionPoolDataSource> serviceAwareCpDataSource) throws Exception {
+    void serviceWithConfigurationTest(@InjectService(timeout = 500) ServiceAware<DataSource> serviceAwareDataSource, //
+            @InjectService(timeout = 500) ServiceAware<XADataSource> serviceAwareXaDataSource, //
+            @InjectService(timeout = 500) ServiceAware<ConnectionPoolDataSource> serviceAwareCpDataSource)
+            throws Exception {
 
         assertThat(serviceAwareDataSource.getServices()).hasSize(1);
         assertThat(serviceAwareXaDataSource.getServices()).hasSize(1);
