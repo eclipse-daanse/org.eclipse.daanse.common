@@ -15,7 +15,7 @@ package org.eclipse.daanse.common.jdbc.datasource.metatype.h2.impl;
 
 import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_DEBUG;
 import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_DESCRIPTION;
-import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_FILESYSTEM;
+import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM;
 import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_IDENTIFIER;
 import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_PASSWORD;
 import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_USERNAME;
@@ -45,8 +45,8 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
     public static final String L10N_DESCRIPTION_DESCRIPTION = L10N_PREFIX + DATASOURCE_PROPERTY_DESCRIPTION
             + L10N_POSTFIX_DESCRIPTION;
 
-    public static final String L10N_FILESYSTEM_NAME = L10N_PREFIX + DATASOURCE_PROPERTY_FILESYSTEM + L10N_POSTFIX_NAME;
-    public static final String L10N_FILESYSTEM_DESCRIPTION = L10N_PREFIX + DATASOURCE_PROPERTY_FILESYSTEM
+    public static final String L10N_FILESYSTEM_NAME = L10N_PREFIX + DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM + L10N_POSTFIX_NAME;
+    public static final String L10N_FILESYSTEM_DESCRIPTION = L10N_PREFIX + DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM
             + L10N_POSTFIX_DESCRIPTION;
 
     public static final String L10N_IDENTIFIER_NAME = L10N_PREFIX + DATASOURCE_PROPERTY_IDENTIFIER + L10N_POSTFIX_NAME;
@@ -87,7 +87,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
     PluggableFileSystem plugableFileSystem();
 
     /**
-     * {@link Constants#DATASOURCE_PROPERTY_FILESYSTEM}.
+     * {@link Constants#DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM}.
      *
      */
     @AttributeDefinition(name = L10N_IDENTIFIER_NAME, description = L10N_IDENTIFIER_DESCRIPTION)
