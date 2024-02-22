@@ -56,7 +56,7 @@ public class Constants {
      *
      * {@link org.eclipse.daanse.common.jdbc.datasource.metatype.h2.impl.H2BaseConfig#plugableFileSystem()}
      */
-    public static final String DATASOURCE_PROPERTY_FILESYSTEM = "plugableFileSystem";
+    public static final String DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM = "plugableFilesystem";
 
     /**
      * Constant for Properties of the Service that could be configured using the

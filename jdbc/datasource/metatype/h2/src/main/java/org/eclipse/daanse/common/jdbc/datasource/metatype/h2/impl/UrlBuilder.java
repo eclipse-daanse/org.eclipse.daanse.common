@@ -39,7 +39,7 @@ class UrlBuilder {
 
     private static void appandFileSystem(StringBuilder urlStringBuilder, H2BaseConfig config, Map<String, Object> map) {
 
-        if (map.containsKey(Constants.DATASOURCE_PROPERTY_FILESYSTEM)) {
+        if (map.containsKey(Constants.DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM)) {
             switch (config.plugableFileSystem()) {
             case ASYNC:
                 urlStringBuilder.append("async:");
