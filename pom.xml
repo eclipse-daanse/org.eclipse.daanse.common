@@ -781,6 +781,7 @@
     <module>io</module>
     <module>jakarta</module>
     <module>jdbc</module>
+    <module>webconsole</module>
   </modules>
   <profiles>
     <profile>
