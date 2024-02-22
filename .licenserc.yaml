@@ -45,5 +45,6 @@ header:
     - '**/*.prefs'
     - 'license.templates'
     - '**/logback-test.xml'
+    - '**/*.svg'
 
   comment: always
