@@ -15,15 +15,16 @@ package org.eclipse.daanse.common.jdbc.datasource.metatype.h2.impl;
 
 import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_DEBUG;
 import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_DESCRIPTION;
-import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM;
 import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_IDENTIFIER;
 import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_PASSWORD;
+import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_PLUGABLE_FILESYSTEM;
 import static org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants.DATASOURCE_PROPERTY_USERNAME;
 
 import org.eclipse.daanse.common.jdbc.datasource.metatype.h2.api.Constants;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.metatype.annotations.Option;
 
 @ObjectClassDefinition(name = H2BaseConfig.L10N_OCD_NAME, description = H2BaseConfig.L10N_POSTFIX_DESCRIPTION)
 @interface H2BaseConfig {
@@ -45,9 +46,10 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
     public static final String L10N_DESCRIPTION_DESCRIPTION = L10N_PREFIX + DATASOURCE_PROPERTY_DESCRIPTION
             + L10N_POSTFIX_DESCRIPTION;
 
-    public static final String L10N_FILESYSTEM_NAME = L10N_PREFIX + DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM + L10N_POSTFIX_NAME;
-    public static final String L10N_FILESYSTEM_DESCRIPTION = L10N_PREFIX + DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM
-            + L10N_POSTFIX_DESCRIPTION;
+    public static final String L10N_PLUGABLE_FILESYSTEM_NAME = L10N_PREFIX + DATASOURCE_PROPERTY_PLUGABLE_FILESYSTEM
+            + L10N_POSTFIX_NAME;
+    public static final String L10N_PLUGABLE_FILESYSTEM_DESCRIPTION = L10N_PREFIX
+            + DATASOURCE_PROPERTY_PLUGABLE_FILESYSTEM + L10N_POSTFIX_DESCRIPTION;
 
     public static final String L10N_IDENTIFIER_NAME = L10N_PREFIX + DATASOURCE_PROPERTY_IDENTIFIER + L10N_POSTFIX_NAME;
     public static final String L10N_IDENTIFIER_DESCRIPTION = L10N_PREFIX + DATASOURCE_PROPERTY_IDENTIFIER
@@ -60,10 +62,6 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
     public static final String L10N_USERNAME_NAME = L10N_PREFIX + DATASOURCE_PROPERTY_USERNAME + L10N_POSTFIX_NAME;
     public static final String L10N_USERNAME_DESCRIPTION = L10N_PREFIX + DATASOURCE_PROPERTY_USERNAME
             + L10N_POSTFIX_DESCRIPTION;
-
-    enum PluggableFileSystem {
-        file, zip, nioMapped, async, memFS, memLZF, nioMemFS, nioMemLZF
-    }
 
     /**
      * {@link Constants#DATASOURCE_PROPERTY_DEBUG}.
@@ -80,14 +78,22 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
     String description();
 
     /**
-     * {@link Constants#DATASOURCE_PROPERTY_DEBUG}.
+     * {@link Constants#DATASOURCE_PROPERTY_PLUGABLE_FILESYSTEM}.
      *
      */
-    @AttributeDefinition(name = L10N_FILESYSTEM_NAME, description = L10N_FILESYSTEM_DESCRIPTION)
-    PluggableFileSystem plugableFilesystem();
+    @AttributeDefinition(name = L10N_PLUGABLE_FILESYSTEM_NAME, description = L10N_PLUGABLE_FILESYSTEM_DESCRIPTION, options = {
+            @Option(value = Constants.OPTION_PLUGABLE_FILESYSTEM_ASYNC),
+            @Option(value = Constants.OPTION_PLUGABLE_FILESYSTEM_FILE),
+            @Option(value = Constants.OPTION_PLUGABLE_FILESYSTEM_MEM_FS),
+            @Option(value = Constants.OPTION_PLUGABLE_FILESYSTEM_MEM_LZF),
+            @Option(value = Constants.OPTION_PLUGABLE_FILESYSTEM_NIO_MAPPED),
+            @Option(value = Constants.OPTION_PLUGABLE_FILESYSTEM_NIO_MEM_FS),
+            @Option(value = Constants.OPTION_PLUGABLE_FILESYSTEM_NIO_MEM_LZF),
+            @Option(value = Constants.OPTION_PLUGABLE_FILESYSTEM_ZIP) })
+    String plugableFilesystem();
 
     /**
-     * {@link Constants#DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM}.
+     * {@link Constants#DATASOURCE_PROPERTY_IDENTIFIER}.
      *
      */
     @AttributeDefinition(name = L10N_IDENTIFIER_NAME, description = L10N_IDENTIFIER_DESCRIPTION)
