@@ -45,33 +45,27 @@ public class H2DataSource implements ConnectionPoolDataSource, DataSource, XADat
     private JdbcDataSource ds;
 
     @Activate
-    public H2DataSource(H2BaseConfig config, Map<String, Object> map) throws SQLException {
+    public H2DataSource(H2BaseConfig config, Map<String, Object> map) {
 
-        try {
+        this.ds = new JdbcDataSource();
+        String url = UrlBuilder.buildUrl(config, map);
 
-            this.ds = new JdbcDataSource();
-            String url = UrlBuilder.buildUrl(config, map);
+        LOGGER.debug("composed url: {}", url);
 
-            LOGGER.debug("composed url: {}", url);
+        ds.setURL(url);
 
-            ds.setURL(url);
-
-            if (map.containsKey(Constants.DATASOURCE_PROPERTY_USERNAME)) {
-                ds.setUser(config.username());
-            }
-
-            if (map.containsKey(Constants.DATASOURCE_PROPERTY_PASSWORD)) {
-                ds.setPassword(config._password());
-            }
-
-            if (map.containsKey(Constants.DATASOURCE_PROPERTY_DESCRIPTION)) {
-                ds.setDescription(config.description());
-            }
-
-        } catch (Exception e) {
-            LOGGER.error("Error on activation", e);
-            throw e;
+        if (map.containsKey(Constants.DATASOURCE_PROPERTY_USERNAME)) {
+            ds.setUser(config.username());
         }
+
+        if (map.containsKey(Constants.DATASOURCE_PROPERTY_PASSWORD)) {
+            ds.setPassword(config._password());
+        }
+
+        if (map.containsKey(Constants.DATASOURCE_PROPERTY_DESCRIPTION)) {
+            ds.setDescription(config.description());
+        }
+
     }
 
     // no @Modified to force consumed Services get new configured connections.
