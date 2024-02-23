@@ -13,10 +13,10 @@
 */
 package org.eclipse.daanse.common.jakarta.servlet.soap;
 
-public class Test {
+class AbstractSoapServletTest {
 
     @org.junit.jupiter.api.Test
-    void testName() throws Exception {
+    void toBeDefinedTest() throws Exception {
 
     }
 }
