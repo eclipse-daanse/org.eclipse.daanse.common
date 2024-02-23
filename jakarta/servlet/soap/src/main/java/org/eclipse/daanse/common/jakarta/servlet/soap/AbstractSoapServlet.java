@@ -136,20 +136,20 @@ public abstract class AbstractSoapServlet extends HttpServlet {
 
             if (LOGGER.isDebugEnabled()) {
                 ByteArrayOutputStream baos = getOutputStreamOfSoapMessage(requestMessage);
-                LOGGER.debug("SOAPMessage in: {}", baos.toString());
+                LOGGER.debug("SOAPMessage in: {}", baos);
             }
 
             SOAPMessage responseMessage = onMessage(requestMessage);
 
             if (LOGGER.isDebugEnabled()) {
                 ByteArrayOutputStream baos = getOutputStreamOfSoapMessage(responseMessage);
-                LOGGER.debug("SOAPMessage out: {}", baos.toString());
+                LOGGER.debug("SOAPMessage out: {}", baos);
             }
 
             writeSoapMessageToServletResponse(servletResponse, responseMessage);
         } catch (Exception ex) {
             LOGGER.error(EXCEPTION_MSG_POST, ex);
-            throw new ServletException(EXCEPTION_MSG_POST);
+            servletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -182,8 +182,7 @@ public abstract class AbstractSoapServlet extends HttpServlet {
     private SOAPMessage createSoapMessageRequest(HttpServletRequest servletRequest) throws IOException, SOAPException {
         MimeHeaders headers = SoapServletHelper.getMimeHeadersFromRequest(servletRequest);
         InputStream requestInptStream = servletRequest.getInputStream();
-        SOAPMessage requestMessage = messageFactory.createMessage(headers, requestInptStream);
-        return requestMessage;
+        return messageFactory.createMessage(headers, requestInptStream);
     }
 
     /**
