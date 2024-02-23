@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
@@ -56,7 +58,7 @@ class FileWatcherRunable implements Runnable {
     private final Map<WatchKey, WatchKeyConfig> watchKeysToConfig = new ConcurrentHashMap<>();
 
     final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-    private AtomicBoolean activated = new AtomicBoolean(false);
+    private CountDownLatch activationLatch = new CountDownLatch(1);
 
     private AtomicBoolean stoped = new AtomicBoolean(false);
 
@@ -70,7 +72,7 @@ class FileWatcherRunable implements Runnable {
     @Override
     public void run() {
 
-        activated.set(true);
+
         LOGGER.info("run - start");
         loopWatchUntilStop();
 
@@ -81,7 +83,7 @@ class FileWatcherRunable implements Runnable {
 
     }
 
-    void addFileWatcherRunable(FileSystemWatcherListener listener, Map<String, Object> props) throws IOException {
+    void addFileWatcherRunable(FileSystemWatcherListener listener, Map<String, Object> props) throws IOException, InterruptedException {
 
         Object oRecursive = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_RECURSIVE,
                 "false");
@@ -130,9 +132,9 @@ class FileWatcherRunable implements Runnable {
 
         WatchKeyConfig config = new WatchKeyConfig(listener, observedPath, List.copyOf(kinds), oPattern, recursive);
 
-        if (!activated.get()) {
+        if (!activationLatch.await(5, TimeUnit.SECONDS)) {
             String sException = "FileWatcherRunable not activated: " + config;
-            LOGGER.error(null);
+            LOGGER.error(sException);
             throw new IllegalStateException(sException);
         }
 
@@ -205,6 +207,7 @@ class FileWatcherRunable implements Runnable {
 
     private void loopWatchUntilStop() {
         try {
+            activationLatch.countDown();
             while (!stoped.get()) {
                 WatchKey key = watchService.take();
 

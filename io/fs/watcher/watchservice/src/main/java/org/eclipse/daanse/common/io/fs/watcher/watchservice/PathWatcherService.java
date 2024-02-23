@@ -45,7 +45,6 @@ public class PathWatcherService {
     private final Map<ComponentServiceObjects<FileSystemWatcherListener>, FileSystemWatcherListener> listenersCSO = Collections
             .synchronizedMap(new HashMap<>());
 
-    private CountDownLatch latchFileWatcherRunableReady = new CountDownLatch(1);
     private FileWatcherRunable fileWatcherRunable;
 
     /**
@@ -61,7 +60,6 @@ public class PathWatcherService {
         fileWatcherRunable = new FileWatcherRunable();
         Executors.newVirtualThreadPerTaskExecutor().execute(fileWatcherRunable);
         LOGGER.info("activated");
-        latchFileWatcherRunableReady.getCount();
     }
 
     @Deactivate
@@ -87,13 +85,7 @@ public class PathWatcherService {
             LOGGER.warn("Could not get FileSystemWatcherListener-Service of: {}, props: {}", listenerCSO, map);
             return;
         }
-        try {
-            latchFileWatcherRunableReady.await(1, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            LOGGER.error("FileWatcherRunable not ready: {}, props: {}", listenerCSO, map);
-            throw new IllegalStateException("FileWatcherRunable not ready", e);
 
-        }
         fileWatcherRunable.addFileWatcherRunable(listener, map);
 
     }
