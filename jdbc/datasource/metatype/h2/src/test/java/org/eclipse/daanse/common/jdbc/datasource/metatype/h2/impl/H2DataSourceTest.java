@@ -32,7 +32,7 @@ import org.osgi.test.junit5.service.ServiceExtension;
 @ExtendWith(BundleContextExtension.class)
 @ExtendWith(ServiceExtension.class)
 @ExtendWith(ConfigurationExtension.class)
-public class H2DataSourceTest {
+class H2DataSourceTest {
 
     @Test
     void noConfigurationNoServiceTest(

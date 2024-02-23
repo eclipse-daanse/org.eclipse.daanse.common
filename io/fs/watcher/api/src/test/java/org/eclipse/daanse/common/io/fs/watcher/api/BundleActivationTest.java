@@ -21,7 +21,7 @@ import org.osgi.test.common.annotation.InjectBundleContext;
 import org.osgi.test.junit5.context.BundleContextExtension;
 
 @ExtendWith(BundleContextExtension.class)
-public class Test {
+class BundleActivationTest {
 
     @org.junit.jupiter.api.Test
     void isBundleActive(@InjectBundleContext BundleContext bundleContext) throws Exception {

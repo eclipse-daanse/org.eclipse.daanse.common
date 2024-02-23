@@ -34,7 +34,9 @@ class UrlBuilder {
     }
 
     private static void appandIdentifier(StringBuilder urlStringBuilder, H2BaseConfig config, Map<String, Object> map) {
-        urlStringBuilder.append(config.identifier());
+        if (map.containsKey(Constants.DATASOURCE_PROPERTY_IDENTIFIER)) {
+            urlStringBuilder.append(config.identifier());
+        }
     }
 
     private static void appandFileSystem(StringBuilder urlStringBuilder, H2BaseConfig config, Map<String, Object> map) {
@@ -43,18 +45,25 @@ class UrlBuilder {
             switch (config.plugableFilesystem()) {
             case async:
                 urlStringBuilder.append("async:");
+                break;
             case file:
                 urlStringBuilder.append("file:");
+                break;
             case memFS:
                 urlStringBuilder.append("memFS:");
+                break;
             case memLZF:
                 urlStringBuilder.append("memLZF:");
+                break;
             case nioMapped:
                 urlStringBuilder.append("nioMapped:");
+                break;
             case nioMemFS:
                 urlStringBuilder.append("nioMemFS:");
+                break;
             case nioMemLZF:
                 urlStringBuilder.append("nioMemLZF:");
+                break;
             case zip:
                 urlStringBuilder.append("zip:");
             }
@@ -65,6 +74,5 @@ class UrlBuilder {
         if (config.debug()) {
             urlStringBuilder.append("debug:");
         }
-
     }
 }
