@@ -72,7 +72,6 @@ class FileWatcherRunable implements Runnable {
     @Override
     public void run() {
 
-
         LOGGER.info("run - start");
         loopWatchUntilStop();
 
@@ -83,51 +82,13 @@ class FileWatcherRunable implements Runnable {
 
     }
 
-    void addFileWatcherRunable(FileSystemWatcherListener listener, Map<String, Object> props) throws IOException, InterruptedException {
+    void addFileWatcherRunable(FileSystemWatcherListener listener, Map<String, Object> props)
+            throws IOException, InterruptedException {
 
-        Object oRecursive = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_RECURSIVE,
-                "false");
-        if (oRecursive == null) {
-            oRecursive = "false";
-        }
-
-        boolean recursive = Boolean.parseBoolean(oRecursive.toString());
-
-        Object objPattern = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATTERN,
-                FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATTERN_DEFAULT);
-
-        boolean emptyPattern = objPattern == null || objPattern.toString().isBlank();
-        Optional<Pattern> oPattern = emptyPattern ? Optional.empty()
-                : Optional.of(Pattern.compile(objPattern.toString()));
-
-        Object oKinds = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_KINDS,
-                new String[] { EventKind.ENTRY_CREATE.toString(), EventKind.ENTRY_DELETE.toString(),
-                        EventKind.ENTRY_MODIFY.toString() });
-
-        List<Kind<?>> kinds = new ArrayList<>();
-
-        if (oKinds instanceof String[] sKinds) {
-
-            for (int i = 0; i < sKinds.length; i++) {
-
-                String sKind = sKinds[i];
-                if ("ENTRY_CREATE".equals(sKind)) {
-
-                    kinds.add(EventKind.ENTRY_CREATE.getKind());
-                } else if ("ENTRY_DELETE".equals(sKind)) {
-
-                    kinds.add(EventKind.ENTRY_DELETE.getKind());
-                } else if ("ENTRY_MODIFY".equals(sKind)) {
-
-                    kinds.add(EventKind.ENTRY_MODIFY.getKind());
-                }
-            }
-        }
-
-        Object oPath = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATH, "");
-
-        boolean emptyPath = oPath == null || oPath.toString().isBlank();
-        String sPath = emptyPath ? "" : oPath.toString();
+        boolean recursive = readRecursiveProperty(props);
+        Optional<Pattern> oPattern = readPatternProperty(props);
+        List<Kind<?>> kinds = readKindsProperty(props);
+        String sPath = readPathProperty(props);
         Path observedPath = fileSystem.getPath(sPath).toAbsolutePath();
 
         WatchKeyConfig config = new WatchKeyConfig(listener, observedPath, List.copyOf(kinds), oPattern, recursive);
@@ -313,6 +274,52 @@ class FileWatcherRunable implements Runnable {
         watchKey.cancel();
         WatchKeyConfig watchKeyConfig = watchKeysToConfig.remove(watchKey);
         LOGGER.info("unregisterd watchkey for: {}", watchKeyConfig);
-
     }
+
+    private static List<Kind<?>> readKindsProperty(Map<String, Object> props) {
+
+        Object oKinds = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_KINDS,
+                new String[] { EventKind.ENTRY_CREATE.toString(), EventKind.ENTRY_DELETE.toString(),
+                        EventKind.ENTRY_MODIFY.toString() });
+
+        List<Kind<?>> kinds = new ArrayList<>();
+        if (oKinds instanceof String[] sKinds) {
+            for (int i = 0; i < sKinds.length; i++) {
+                String sKind = sKinds[i];
+                if ("ENTRY_CREATE".equals(sKind)) {
+                    kinds.add(EventKind.ENTRY_CREATE.getKind());
+                } else if ("ENTRY_DELETE".equals(sKind)) {
+                    kinds.add(EventKind.ENTRY_DELETE.getKind());
+                } else if ("ENTRY_MODIFY".equals(sKind)) {
+                    kinds.add(EventKind.ENTRY_MODIFY.getKind());
+                }
+            }
+        }
+        return kinds;
+    }
+
+    private static boolean readRecursiveProperty(Map<String, Object> props) {
+        Object oRecursive = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_RECURSIVE,
+                "false");
+        if (oRecursive == null) {
+            oRecursive = "false";
+        }
+        return Boolean.parseBoolean(oRecursive.toString());
+    }
+
+    private static Optional<Pattern> readPatternProperty(Map<String, Object> props) {
+        Object objPattern = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATTERN,
+                FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATTERN_DEFAULT);
+
+        boolean emptyPattern = objPattern == null || objPattern.toString().isBlank();
+        return emptyPattern ? Optional.empty() : Optional.of(Pattern.compile(objPattern.toString()));
+    }
+
+    private static String readPathProperty(Map<String, Object> props) {
+        Object oPath = props.getOrDefault(FileSystemWatcherWhiteboardConstants.FILESYSTEM_WATCHER_PATH, "");
+
+        boolean emptyPath = oPath == null || oPath.toString().isBlank();
+        return emptyPath ? "" : oPath.toString();
+    }
+
 }
