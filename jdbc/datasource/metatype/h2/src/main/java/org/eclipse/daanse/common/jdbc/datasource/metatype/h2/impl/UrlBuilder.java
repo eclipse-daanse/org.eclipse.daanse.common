@@ -40,22 +40,22 @@ class UrlBuilder {
     private static void appandFileSystem(StringBuilder urlStringBuilder, H2BaseConfig config, Map<String, Object> map) {
 
         if (map.containsKey(Constants.DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM)) {
-            switch (config.plugableFileSystem()) {
-            case ASYNC:
+            switch (config.plugableFilesystem()) {
+            case async:
                 urlStringBuilder.append("async:");
-            case FILE:
+            case file:
                 urlStringBuilder.append("file:");
-            case MEM_FS:
+            case memFS:
                 urlStringBuilder.append("memFS:");
-            case MEM_LZF:
+            case memLZF:
                 urlStringBuilder.append("memLZF:");
-            case NIO_MAPPED:
+            case nioMapped:
                 urlStringBuilder.append("nioMapped:");
-            case NIO_MEM_FS:
+            case nioMemFS:
                 urlStringBuilder.append("nioMemFS:");
-            case NIO_MEM_LZF:
+            case nioMemLZF:
                 urlStringBuilder.append("nioMemLZF:");
-            case ZIP:
+            case zip:
                 urlStringBuilder.append("zip:");
             }
         }

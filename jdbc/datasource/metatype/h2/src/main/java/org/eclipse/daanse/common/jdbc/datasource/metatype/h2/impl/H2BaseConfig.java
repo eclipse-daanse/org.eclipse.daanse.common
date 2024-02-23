@@ -62,7 +62,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
             + L10N_POSTFIX_DESCRIPTION;
 
     enum PluggableFileSystem {
-        FILE, ZIP, NIO_MAPPED, ASYNC, MEM_FS, MEM_LZF, NIO_MEM_FS, NIO_MEM_LZF
+        file, zip, nioMapped, async, memFS, memLZF, nioMemFS, nioMemLZF
     }
 
     /**
@@ -84,7 +84,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
      *
      */
     @AttributeDefinition(name = L10N_FILESYSTEM_NAME, description = L10N_FILESYSTEM_DESCRIPTION)
-    PluggableFileSystem plugableFileSystem();
+    PluggableFileSystem plugableFilesystem();
 
     /**
      * {@link Constants#DATASOURCE_PROPERTY_PUGABLE_FILESYSTEM}.
