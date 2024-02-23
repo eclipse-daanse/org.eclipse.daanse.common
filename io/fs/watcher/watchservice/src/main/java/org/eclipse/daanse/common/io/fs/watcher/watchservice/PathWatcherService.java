@@ -17,9 +17,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherListener;
 import org.osgi.service.component.ComponentServiceObjects;
@@ -45,6 +44,7 @@ public class PathWatcherService {
     private final Map<ComponentServiceObjects<FileSystemWatcherListener>, FileSystemWatcherListener> listenersCSO = Collections
             .synchronizedMap(new HashMap<>());
 
+    ExecutorService executorService;
     private FileWatcherRunable fileWatcherRunable;
 
     /**
@@ -57,8 +57,11 @@ public class PathWatcherService {
     @Activate
     public PathWatcherService() throws IOException {
         LOGGER.info("constrcutor");
+
         fileWatcherRunable = new FileWatcherRunable();
-        Executors.newVirtualThreadPerTaskExecutor().execute(fileWatcherRunable);
+        executorService = Executors.newVirtualThreadPerTaskExecutor();
+        executorService.execute(fileWatcherRunable);
+
         LOGGER.info("activated");
     }
 
@@ -67,6 +70,7 @@ public class PathWatcherService {
         LOGGER.info("deactivate - start");
 
         fileWatcherRunable.shutdown();
+        executorService.close();
 
         LOGGER.info("deactivate - end");
 
