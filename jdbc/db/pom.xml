@@ -16,13 +16,14 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.eclipse.daanse</groupId>
-    <artifactId>org.eclipse.daanse.common</artifactId>
+    <artifactId>org.eclipse.daanse.common.jdbc</artifactId>
     <version>${revision}</version>
   </parent>
-  <artifactId>org.eclipse.daanse.common.jdbc</artifactId>
+  <artifactId>org.eclipse.daanse.common.jdbc.db</artifactId>
   <packaging>pom</packaging>
   <modules>
-    <module>datasource</module>
-    <module>db</module>
+    <module>api</module>
+    <module>record</module>
+    <module>core</module>
   </modules>
 </project>
