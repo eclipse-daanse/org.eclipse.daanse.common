@@ -19,15 +19,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.daanse.common.jdbc.db.api.SqlStatementGenerator;
-import org.eclipse.daanse.common.jdbc.db.record.DatabaseInfoR;
-import org.eclipse.daanse.common.jdbc.db.record.IdentifierInfoR;
-import org.eclipse.daanse.common.jdbc.db.record.MetaInfoR;
+import org.eclipse.daanse.common.jdbc.db.record.meta.DatabaseInfoR;
+import org.eclipse.daanse.common.jdbc.db.record.meta.IdentifierInfoR;
+import org.eclipse.daanse.common.jdbc.db.record.meta.MetaInfoR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnDataTypeR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnDefinitionR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.SchemaReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.TableReferenceR;
-import org.eclipse.daanse.common.jdbc.db.record.sql.element.ViewReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.statement.CreateContainerSqlStatementR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.statement.CreateSchemaSqlStatementR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.statement.DropContainerSqlStatementR;
@@ -39,61 +38,64 @@ import org.junit.jupiter.api.Test;
 class SqlStatementGeneratorImplTest {
 
     private SqlStatementGenerator generator = new SqlStatementGeneratorImpl(
-            new MetaInfoR(new DatabaseInfoR("", "", 0, 0), new IdentifierInfoR("#")));
+            new MetaInfoR(new DatabaseInfoR("", "", 0, 0), new IdentifierInfoR("#"), List.of(), List.of()));
 
     @Test
     void dropTableNoSchemaNoExist() {
         String sql = generator.getSqlOfStatement(
-                new DropContainerSqlStatementR(new TableReferenceR(Optional.empty(), "theTableName"), false));
+                new DropContainerSqlStatementR(new TableReferenceR(Optional.empty(), "theTableName", "TABLE"), false));
         assertThat(sql).isEqualTo("DROP TABLE #theTableName#");
     }
 
     @Test
     void dropTableWithSchemaNoExist() {
         String sql = generator.getSqlOfStatement(new DropContainerSqlStatementR(
-                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName"), false));
+                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
+                false));
         assertThat(sql).isEqualTo("DROP TABLE #theSchemaName#.#theTableName#");
     }
 
     @Test
     void dropTableNoSchemaWithExist() {
         String sql = generator.getSqlOfStatement(
-                new DropContainerSqlStatementR(new TableReferenceR(Optional.empty(), "theTableName"), true));
+                new DropContainerSqlStatementR(new TableReferenceR(Optional.empty(), "theTableName", "TABLE"), true));
         assertThat(sql).isEqualTo("DROP TABLE IF EXISTS #theTableName#");
     }
 
     @Test
     void dropTableWithSchemaWithExist() {
         String sql = generator.getSqlOfStatement(new DropContainerSqlStatementR(
-                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName"), true));
+                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
+                true));
         assertThat(sql).isEqualTo("DROP TABLE IF EXISTS #theSchemaName#.#theTableName#");
     }
 
     @Test
     void dropViewNoSchemaNoExist() {
         String sql = generator.getSqlOfStatement(
-                new DropContainerSqlStatementR(new ViewReferenceR(Optional.empty(), "theTableName"), false));
+                new DropContainerSqlStatementR(new TableReferenceR(Optional.empty(), "theTableName", "VIEW"), false));
         assertThat(sql).isEqualTo("DROP VIEW #theTableName#");
     }
 
     @Test
     void dropViewWithSchemaNoExist() {
         String sql = generator.getSqlOfStatement(new DropContainerSqlStatementR(
-                new ViewReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName"), false));
+                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "VIEW"),
+                false));
         assertThat(sql).isEqualTo("DROP VIEW #theSchemaName#.#theTableName#");
     }
 
     @Test
     void dropViewNoSchemaWithExist() {
         String sql = generator.getSqlOfStatement(
-                new DropContainerSqlStatementR(new ViewReferenceR(Optional.empty(), "theTableName"), true));
+                new DropContainerSqlStatementR(new TableReferenceR(Optional.empty(), "theTableName", "VIEW"), true));
         assertThat(sql).isEqualTo("DROP VIEW IF EXISTS #theTableName#");
     }
 
     @Test
     void dropViewWithSchemaWithExist() {
         String sql = generator.getSqlOfStatement(new DropContainerSqlStatementR(
-                new ViewReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName"), true));
+                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "VIEW"), true));
         assertThat(sql).isEqualTo("DROP VIEW IF EXISTS #theSchemaName#.#theTableName#");
     }
 
@@ -128,21 +130,21 @@ class SqlStatementGeneratorImplTest {
     @Test
     void truncateTableNoSchema() {
         String sql = generator.getSqlOfStatement(
-                new TruncateTableSqlStatementR(new TableReferenceR(Optional.empty(), "theTableName")));
+                new TruncateTableSqlStatementR(new TableReferenceR(Optional.empty(), "theTableName", "TABLE")));
         assertThat(sql).isEqualTo("TRUNCATE TABLE #theTableName#");
     }
 
     @Test
     void truncateTableWithSchema() {
         String sql = generator.getSqlOfStatement(new TruncateTableSqlStatementR(
-                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName")));
+                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE")));
         assertThat(sql).isEqualTo("TRUNCATE TABLE #theSchemaName#.#theTableName#");
     }
 
     @Test
     void createTableWithSchema() {
         String sql = generator.getSqlOfStatement(new CreateContainerSqlStatementR(
-                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName"),
+                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnDefinitionR(new ColumnReferenceR("Col1"),
                         new ColumnDataTypeR("int", Optional.empty()))),
                 true));
@@ -153,7 +155,7 @@ class SqlStatementGeneratorImplTest {
     @Test
     void createTableWithColumDetails() {
         String sql = generator.getSqlOfStatement(new CreateContainerSqlStatementR(
-                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName"),
+                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnDefinitionR(new ColumnReferenceR("Col1"),
                         new ColumnDataTypeR("varchar", Optional.of("200")))),
                 true));
@@ -164,7 +166,7 @@ class SqlStatementGeneratorImplTest {
     @Test
     void createTableWithMiltiColumn() {
         String sql = generator.getSqlOfStatement(new CreateContainerSqlStatementR(
-                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName"),
+                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnDefinitionR(new ColumnReferenceR("Col1"),
                         new ColumnDataTypeR("int", Optional.empty())),
                         new ColumnDefinitionR(new ColumnReferenceR("Col2"),
@@ -176,7 +178,7 @@ class SqlStatementGeneratorImplTest {
     @Test
     void insertTableWithMiltiColumn() {
         String sql = generator.getSqlOfStatement(new InsertSqlStatementR(
-                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName"),
+                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnReferenceR("Col1"), new ColumnReferenceR("Col2")), List.of("?", "?")));
         assertThat(sql).isEqualTo("INSERT INTO #theSchemaName#.#theTableName#(#Col1#, #Col2#) VALUES (?, ?)");
 
@@ -185,7 +187,7 @@ class SqlStatementGeneratorImplTest {
     @Test
     void insertTableWithOneColumn() {
         String sql = generator.getSqlOfStatement(new InsertSqlStatementR(
-                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName"),
+                new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnReferenceR("Col1")), List.of("?")));
         assertThat(sql).isEqualTo("INSERT INTO #theSchemaName#.#theTableName#(#Col1#) VALUES (?)");
 

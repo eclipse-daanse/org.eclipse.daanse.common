@@ -13,11 +13,11 @@
 */
 package org.eclipse.daanse.common.jdbc.db.api.sql.statement;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.ContainerReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
 
 public non-sealed interface DropContainerSqlStatement extends SqlStatement {
 
     boolean ifExists();
 
-    ContainerReference container();
+    TableReference container();
 }

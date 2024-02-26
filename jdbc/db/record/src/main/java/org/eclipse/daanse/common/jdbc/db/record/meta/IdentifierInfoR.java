@@ -11,12 +11,10 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.api.sql;
+package org.eclipse.daanse.common.jdbc.db.record.meta;
 
-import java.util.Optional;
+import org.eclipse.daanse.common.jdbc.db.api.meta.IdentifierInfo;
 
-public sealed interface ContainerReference extends Named permits ViewReference, TableReference {
-
-    Optional<SchemaReference> schema();
+public record IdentifierInfoR(String quoteString) implements IdentifierInfo {
 
 }

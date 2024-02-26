@@ -13,15 +13,13 @@
 */
 package org.eclipse.daanse.common.jdbc.db.core;
 
-import org.eclipse.daanse.common.jdbc.db.api.MetaInfo;
 import org.eclipse.daanse.common.jdbc.db.api.SqlStatementGenerator;
+import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDataType;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDefinition;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.ContainerReference;
 import org.eclipse.daanse.common.jdbc.db.api.sql.Named;
 import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.ViewReference;
 import org.eclipse.daanse.common.jdbc.db.api.sql.statement.CreateSchemaSqlStatement;
 import org.eclipse.daanse.common.jdbc.db.api.sql.statement.CreateSqlStatement;
 import org.eclipse.daanse.common.jdbc.db.api.sql.statement.DropContainerSqlStatement;
@@ -97,23 +95,19 @@ public class SqlStatementGeneratorImpl implements SqlStatementGenerator {
     }
 
     private StringBuilder writeCreateSqlStatement(CreateSqlStatement statement) {
-        ContainerReference container = statement.container();
+        TableReference table = statement.table();
 
         StringBuilder sb = new StringBuilder(20);
         sb.append("CREATE ");
 
-        String contrainerTypeWord = switch (container) {
-        case TableReference unnamed_ -> "TABLE ";
-        case ViewReference unnamed_ -> "VIEW ";
-        };
-
-        sb.append(contrainerTypeWord);
+        sb.append(table.type());
+        sb.append(" ");
 
         if (statement.ifNotExists()) {
             sb.append("IF NOT EXISTS ");
         }
 
-        quoteContainerReference(sb, container);
+        quoteContainerReference(sb, table);
 
         sb.append("( ");
 
@@ -182,28 +176,24 @@ public class SqlStatementGeneratorImpl implements SqlStatementGenerator {
     }
 
     private StringBuilder writeDropContainerSqlStatement(DropContainerSqlStatement statement) {
-        ContainerReference container = statement.container();
+        TableReference table = statement.container();
 
         StringBuilder sb = new StringBuilder(20);
         sb.append("DROP ");
 
-        String contrainerTypeWord = switch (container) {
-        case TableReference unnamed_ -> "TABLE ";
-        case ViewReference unnamed_ -> "VIEW ";
-        };
-
-        sb.append(contrainerTypeWord);
+        sb.append(table.type());
+        sb.append(" ");
 
         if (statement.ifExists()) {
             sb.append("IF EXISTS ");
         }
 
-        quoteContainerReference(sb, container);
+        quoteContainerReference(sb, table);
 
         return sb;
     }
 
-    private void quoteContainerReference(final StringBuilder sb, final ContainerReference containerReference) {
+    private void quoteContainerReference(final StringBuilder sb, final TableReference containerReference) {
 
         containerReference.schema().ifPresent(schema -> {
             quoteReference(sb, schema);

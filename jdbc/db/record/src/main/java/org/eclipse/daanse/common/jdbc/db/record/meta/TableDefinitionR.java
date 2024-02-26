@@ -11,14 +11,12 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.record;
 
-import org.eclipse.daanse.common.jdbc.db.api.MetaInfo.DatabaseInfo;
+package org.eclipse.daanse.common.jdbc.db.record.meta;
 
-public record DatabaseInfoR(//
-        String databaseProductName, //
-        String databaseProductVersion, //
-        int databaseMajorVersion, //
-        int databaseMinorVersion //
-) implements DatabaseInfo {
+import org.eclipse.daanse.common.jdbc.db.api.meta.TableDefinition;
+import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
+
+public record TableDefinitionR(TableReference table, TableMetaData metaData) implements TableDefinition {
+
 }

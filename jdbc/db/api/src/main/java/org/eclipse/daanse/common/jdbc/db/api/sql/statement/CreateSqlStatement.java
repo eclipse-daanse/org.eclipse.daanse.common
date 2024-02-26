@@ -16,13 +16,13 @@ package org.eclipse.daanse.common.jdbc.db.api.sql.statement;
 import java.util.List;
 
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDefinition;
-import org.eclipse.daanse.common.jdbc.db.api.sql.ContainerReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
 
 public non-sealed interface CreateSqlStatement extends SqlStatement {
 
     boolean ifNotExists();
 
-    ContainerReference container();
+    TableReference table();
 
     List<ColumnDefinition> columnDefinitions();
 }

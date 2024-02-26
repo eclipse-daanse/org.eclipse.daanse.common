@@ -11,13 +11,8 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.record.sql.element;
+package org.eclipse.daanse.common.jdbc.db.api.sql;
 
-import java.util.Optional;
-
-import org.eclipse.daanse.common.jdbc.db.api.sql.SchemaReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.ViewReference;
-
-public record ViewReferenceR(Optional<SchemaReference> schema, String name) implements ViewReference {
+public interface CatalogReference extends Named {
 
 }

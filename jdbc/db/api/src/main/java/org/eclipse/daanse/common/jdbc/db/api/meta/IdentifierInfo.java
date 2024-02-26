@@ -11,12 +11,16 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.record.sql.statement;
+package org.eclipse.daanse.common.jdbc.db.api.meta;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.statement.DropContainerSqlStatement;
+public interface IdentifierInfo {
 
-public record DropContainerSqlStatementR(TableReference container, boolean ifExists)
-        implements DropContainerSqlStatement {
+    /**
+     * Retrieves the string used to quote SQL identifiers. This method returns a
+     * space " " if identifier quoting is not supported.
+     *
+     * @return the quoting string or a space if quoting is not supported
+     */
+    String quoteString();
 
 }

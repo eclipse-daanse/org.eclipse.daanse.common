@@ -18,14 +18,15 @@ import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
 import org.eclipse.daanse.common.jdbc.db.api.DatabaseService;
-import org.eclipse.daanse.common.jdbc.db.api.MetaInfo;
-import org.eclipse.daanse.common.jdbc.db.api.MetaInfo.DatabaseInfo;
-import org.eclipse.daanse.common.jdbc.db.api.MetaInfo.IdentifierInfo;
+import org.eclipse.daanse.common.jdbc.db.api.meta.DatabaseInfo;
+import org.eclipse.daanse.common.jdbc.db.api.meta.IdentifierInfo;
+import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -42,6 +43,8 @@ class DatabaseServiceImplTest {
     Connection connection;
     @Mock
     DatabaseMetaData databaseMetaData;
+    @Mock
+    ResultSet resultSet;
 
     @Test
     void createMetaDataTest() throws SQLException {
@@ -54,6 +57,10 @@ class DatabaseServiceImplTest {
         when(databaseMetaData.getDatabaseMinorVersion()).thenReturn(21);
         when(databaseMetaData.getDatabaseProductName()).thenReturn("MyDB");
         when(databaseMetaData.getDatabaseProductVersion()).thenReturn("a");
+        when(databaseMetaData.getTypeInfo()).thenReturn(resultSet);
+        when(databaseMetaData.getCatalogs()).thenReturn(resultSet);
+
+        when(resultSet.next()).thenReturn(false);
 
         MetaInfo metaInfo = databaseService.createMetaInfo(ds);
 

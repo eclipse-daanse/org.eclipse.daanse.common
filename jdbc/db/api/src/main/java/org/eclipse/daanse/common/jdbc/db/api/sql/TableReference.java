@@ -13,6 +13,20 @@
 */
 package org.eclipse.daanse.common.jdbc.db.api.sql;
 
-public non-sealed interface TableReference extends ContainerReference {
+import java.util.Optional;
+
+public interface TableReference extends Named {
+
+    public static final String TYPE_TABLE = "TABLE";
+    public static final String TYPE_VIEW = "VIEW";
+    public static final String TYPE_SYSTEM_TABLE = "SYSTEM TABLE";
+    public static final String TYPE_GLOBAL_TEMPORARY = "GLOBAL TEMPORARY";
+    public static final String TYPE_LOCAL_TEMPORARY = "LOCAL TEMPORARY";
+    public static final String TYPE_ALIAS = "ALIAS";
+    public static final String TYPE_SYNONYM = "SYNONYM";
+
+    Optional<SchemaReference> schema();
+
+    String type();
 
 }

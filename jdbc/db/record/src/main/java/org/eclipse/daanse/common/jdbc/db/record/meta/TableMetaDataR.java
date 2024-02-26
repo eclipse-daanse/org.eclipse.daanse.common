@@ -11,11 +11,14 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.api.sql;
+
+package org.eclipse.daanse.common.jdbc.db.record.meta;
 
 import java.util.Optional;
 
-public interface SchemaReference extends Named {
+import org.eclipse.daanse.common.jdbc.db.api.meta.TableDefinition.TableMetaData;
 
-    Optional<CatalogReference> catalog();
+public record TableMetaDataR(Optional<String> remarks, Optional<String> typeCatalog, Optional<String> typeSchema,
+        Optional<String> typeName, Optional<String> selfReferencingColumnName, Optional<String> referencingGenerationa)
+        implements TableMetaData {
 }

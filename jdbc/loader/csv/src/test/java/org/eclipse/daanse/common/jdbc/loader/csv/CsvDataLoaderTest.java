@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -70,6 +71,8 @@ class CscDataLoaderTest {
 
     @Mock
     DatabaseMetaData databaseMetaData;
+    @Mock
+    ResultSet resultSet;
 
     @Mock
     Connection connection;
@@ -104,6 +107,10 @@ class CscDataLoaderTest {
 
         when(connection.prepareStatement(any())).thenReturn(preparedStatement);
         when(preparedStatement.getConnection()).thenReturn(connection);
+        when(databaseMetaData.getTypeInfo()).thenReturn(resultSet);
+        when(databaseMetaData.getCatalogs()).thenReturn(resultSet);
+
+        when(resultSet.next()).thenReturn(false);
 
         when(connection.createStatement()).thenReturn(statement);
         bc.registerService(DataSource.class, dataSource, dictionaryOf("ds", "1"));
@@ -153,7 +160,7 @@ class CscDataLoaderTest {
     }
 
     @Test
-    void testBatch() throws IOException, URISyntaxException, SQLException, InterruptedException {
+    void testinsertParamStatement() throws IOException, URISyntaxException, SQLException, InterruptedException {
         Path p = path.resolve("csv");
         Files.createDirectories(p);
         Thread.sleep(200);
@@ -173,7 +180,7 @@ class CscDataLoaderTest {
     }
 
     @Test
-    void testWithoutBacSubDir() throws IOException, URISyntaxException, SQLException, InterruptedException {
+    void testSubDir() throws IOException, URISyntaxException, SQLException, InterruptedException {
         Path p = path.resolve("csv/schema1");
         Files.createDirectories(p);
 

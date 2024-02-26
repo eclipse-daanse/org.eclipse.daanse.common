@@ -35,8 +35,8 @@ import org.eclipse.daanse.common.io.fs.watcher.api.EventKind;
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherListener;
 import org.eclipse.daanse.common.io.fs.watcher.api.propertytypes.FileSystemWatcherListenerProperties;
 import org.eclipse.daanse.common.jdbc.db.api.DatabaseService;
-import org.eclipse.daanse.common.jdbc.db.api.MetaInfo;
 import org.eclipse.daanse.common.jdbc.db.api.SqlStatementGenerator;
+import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDataType;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDefinition;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
@@ -142,7 +142,7 @@ public class CsvDataLoader implements FileSystemWatcherListener {
             }
         });
 
-        TableReference table = new TableReferenceR(schema, fileName);
+        TableReference table = new TableReferenceR(schema, fileName, "TABLE");
         dropTable(connection, table);
 
         if (!path.toFile().exists()) {
@@ -369,7 +369,7 @@ public class CsvDataLoader implements FileSystemWatcherListener {
             Optional<SchemaReference> schema = getSchemaFromPath(path);
 
             DropContainerSqlStatementR dropStatement = new DropContainerSqlStatementR(
-                    new TableReferenceR(schema, tableName), true);
+                    new TableReferenceR(schema, tableName, "TABLE"), true);
 
             String sql = sqlStatementGenerator.getSqlOfStatement(dropStatement);
 

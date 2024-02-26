@@ -11,10 +11,7 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.record;
+@org.osgi.annotation.bundle.Export
+@org.osgi.annotation.versioning.Version("0.0.1")
 
-import org.eclipse.daanse.common.jdbc.db.api.MetaInfo;
-
-public record MetaInfoR(DatabaseInfo databaseInfo, IdentifierInfo identifierInfo) implements MetaInfo {
-
-}
+package org.eclipse.daanse.common.jdbc.db.api.meta;

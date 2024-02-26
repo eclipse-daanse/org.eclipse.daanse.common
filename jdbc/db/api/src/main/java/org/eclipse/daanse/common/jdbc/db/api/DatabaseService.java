@@ -16,8 +16,13 @@ package org.eclipse.daanse.common.jdbc.db.api;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Optional;
 
 import javax.sql.DataSource;
+
+import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
+import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
 
 /**
  * Service that helps to communicate with the Database.
@@ -55,5 +60,8 @@ public interface DatabaseService {
      * @return SqlStatementGenerator
      */
     SqlStatementGenerator createSqlStatementGenerator(MetaInfo metaInfo);
+
+    Optional<Integer> getColumnDataType(Connection connection, TableReference table, ColumnReference column)
+            throws SQLException;
 
 }
