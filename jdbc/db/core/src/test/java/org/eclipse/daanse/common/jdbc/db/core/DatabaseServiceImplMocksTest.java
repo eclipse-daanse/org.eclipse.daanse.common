@@ -33,7 +33,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class DatabaseServiceImplTest {
+class DatabaseServiceImplMocksTest {
 
     private DatabaseService databaseService = new DatabaseServiceImpl();
 

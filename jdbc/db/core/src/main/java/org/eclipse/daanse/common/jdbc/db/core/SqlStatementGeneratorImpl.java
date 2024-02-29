@@ -15,8 +15,9 @@ package org.eclipse.daanse.common.jdbc.db.core;
 
 import org.eclipse.daanse.common.jdbc.db.api.SqlStatementGenerator;
 import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDataType;
+import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDefinition;
+import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnMetaData;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
 import org.eclipse.daanse.common.jdbc.db.api.sql.Named;
 import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
@@ -27,8 +28,12 @@ import org.eclipse.daanse.common.jdbc.db.api.sql.statement.DropSchemaSqlStatemen
 import org.eclipse.daanse.common.jdbc.db.api.sql.statement.InsertSqlStatement;
 import org.eclipse.daanse.common.jdbc.db.api.sql.statement.SqlStatement;
 import org.eclipse.daanse.common.jdbc.db.api.sql.statement.TruncateTableSqlStatement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SqlStatementGeneratorImpl implements SqlStatementGenerator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Logger.class);
     public static final String NO_QUOTE_FROM_METADATA = " ";
 
     private final MetaInfo metaInfo;
@@ -42,6 +47,9 @@ public class SqlStatementGeneratorImpl implements SqlStatementGenerator {
     @Override
     public String getSqlOfStatement(SqlStatement statement) {
 
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Input SqlStatementObject: {}", statement);
+        }
         StringBuilder sb = switch (statement) {
         case DropContainerSqlStatement dc -> writeDropContainerSqlStatement(dc);
         case DropSchemaSqlStatement ds -> writeDropSchemaSqlStatement(ds);
@@ -50,6 +58,9 @@ public class SqlStatementGeneratorImpl implements SqlStatementGenerator {
         case CreateSqlStatement cc -> writeCreateSqlStatement(cc);
         case InsertSqlStatement is -> writeInsertSqlStatement(is);
         };
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Generated SqlStatement: {}", sb.toString());
+        }
         return sb.toString();
     }
 
@@ -118,22 +129,31 @@ public class SqlStatementGeneratorImpl implements SqlStatementGenerator {
                 first = false;
             } else {
                 sb.append(", ");
-
             }
 
             quoteReference(sb, columnDefinition.column());
             sb.append(" ");
 
-            ColumnDataType dataType = columnDefinition.columnType();
-            sb.append(dataType.name());
+            ColumnMetaData dataType = columnDefinition.columnType();
 
-            dataType.detail().ifPresent(detail -> {
+            TypeInfo typeInfo = metaInfo.typeInfos().stream().filter(t -> {
+                return t.dataType() == dataType.dataType();
+            }).toList().get(0);
 
+            sb.append(typeInfo.typeName());
+
+            dataType.columnSize().ifPresent(columnSize -> {
                 sb.append("(");
-                sb.append(detail);
-                sb.append(")");
+                sb.append(columnSize);
 
+                dataType.decimalDigits().ifPresent(i -> {
+                    sb.append(",");
+                    sb.append(i);
+                });
+
+                sb.append(")");
             });
+
         }
 
         sb.append(")");

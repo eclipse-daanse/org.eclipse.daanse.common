@@ -28,19 +28,28 @@ import org.eclipse.daanse.common.jdbc.db.api.SqlStatementGenerator;
 import org.eclipse.daanse.common.jdbc.db.api.meta.DatabaseInfo;
 import org.eclipse.daanse.common.jdbc.db.api.meta.IdentifierInfo;
 import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
+import org.eclipse.daanse.common.jdbc.db.api.meta.TableDefinition;
+import org.eclipse.daanse.common.jdbc.db.api.meta.TableDefinition.TableMetaData;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo.Nullable;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo.Searchable;
 import org.eclipse.daanse.common.jdbc.db.api.sql.CatalogReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDefinition;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
 import org.eclipse.daanse.common.jdbc.db.api.sql.SchemaReference;
 import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
 import org.eclipse.daanse.common.jdbc.db.record.meta.DatabaseInfoR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.IdentifierInfoR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.MetaInfoR;
+import org.eclipse.daanse.common.jdbc.db.record.meta.TableDefinitionR;
+import org.eclipse.daanse.common.jdbc.db.record.meta.TableMetaDataR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.TypeInfoR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.CatalogReferenceR;
+import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnMetaDataR;
+import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnDefinitionR;
+import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.SchemaReferenceR;
+import org.eclipse.daanse.common.jdbc.db.record.sql.element.TableReferenceR;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ServiceScope;
 import org.slf4j.Logger;
@@ -67,12 +76,13 @@ public class DatabaseServiceImpl implements DatabaseService {
     private MetaInfo readMetaInfo(DatabaseMetaData databaseMetaData) throws SQLException {
         DatabaseInfo databaseInfo = readDatabaseInfo(databaseMetaData);
         IdentifierInfo identifierInfo = readIdentifierInfo(databaseMetaData);
-        List<TypeInfo> typeInfos = readTypeInfo(databaseMetaData);
-        List<CatalogReference> catalogs = readCatalogs(databaseMetaData);
+        List<TypeInfo> typeInfos = getTypeInfo(databaseMetaData);
+        List<CatalogReference> catalogs = getCatalogs(databaseMetaData);
         return new MetaInfoR(databaseInfo, identifierInfo, typeInfos, catalogs);
     }
 
-    private List<CatalogReference> readCatalogs(DatabaseMetaData databaseMetaData) throws SQLException {
+    @Override
+    public List<CatalogReference> getCatalogs(DatabaseMetaData databaseMetaData) throws SQLException {
 
         List<CatalogReference> catalogs = new ArrayList<>();
         try (ResultSet rs = databaseMetaData.getCatalogs()) {
@@ -84,24 +94,166 @@ public class DatabaseServiceImpl implements DatabaseService {
         return List.copyOf(catalogs);
     }
 
-    private List<SchemaReference> readSchemas(DatabaseMetaData databaseMetaData) throws SQLException {
+    @Override
+    public List<SchemaReference> getSchemas(DatabaseMetaData databaseMetaData) throws SQLException {
+        return getSchemas(databaseMetaData, null);
+    }
+
+    @Override
+    public List<SchemaReference> getSchemas(DatabaseMetaData databaseMetaData, CatalogReference catalog)
+            throws SQLException {
+
+        String catalogName = null;
+
+        if (catalog != null) {
+            catalogName = catalog.name();
+        }
 
         List<SchemaReference> schemas = new ArrayList<>();
-        try (ResultSet rs = databaseMetaData.getSchemas()) {
+        try (ResultSet rs = databaseMetaData.getSchemas(catalogName, null)) {
             while (rs.next()) {
                 final String schemaName = rs.getString("TABLE_SCHEM");
-                final Optional<CatalogReference> catalog = Optional.ofNullable(rs.getString("TABLE_CATALOG"))
-                        .map(c -> new CatalogReferenceR(c));
-
-                schemas.add(new SchemaReferenceR(catalog, schemaName));
+                final Optional<CatalogReference> c = Optional.ofNullable(rs.getString("TABLE_CATALOG"))
+                        .map(cat -> new CatalogReferenceR(cat));
+                schemas.add(new SchemaReferenceR(c, schemaName));
             }
         }
         return List.copyOf(schemas);
     }
 
+    @Override
+    public List<String> getTableTypes(DatabaseMetaData databaseMetaData) throws SQLException {
 
+        List<String> typeInfos = new ArrayList<>();
+        try (ResultSet rs = databaseMetaData.getTableTypes()) {
+            while (rs.next()) {
+                final String tableTypeName = rs.getString("TABLE_TYPE");
+                typeInfos.add(tableTypeName);
+            }
+        }
 
-    private List<TypeInfo> readTypeInfo(DatabaseMetaData databaseMetaData) throws SQLException {
+        return List.copyOf(typeInfos);
+    }
+
+    @Override
+    public List<TableDefinition> getTableDefinitions(DatabaseMetaData databaseMetaData) throws SQLException {
+        return getTableDefinitions(databaseMetaData, List.of());
+    }
+
+    @Override
+    public List<TableDefinition> getTableDefinitions(DatabaseMetaData databaseMetaData, List<String> types)
+            throws SQLException {
+
+        String[] typesArr = typesArrayForFilterNull(types);
+
+        return getTableDefinitions(databaseMetaData, null, null, null, typesArr);
+    }
+
+    private static String[] typesArrayForFilterNull(List<String> types) {
+        String[] typesArr = null;
+        if (types != null && !types.isEmpty()) {
+            typesArr = types.toArray(String[]::new);
+        }
+        return typesArr;
+    }
+
+    @Override
+    public List<TableDefinition> getTableDefinitions(DatabaseMetaData databaseMetaData, CatalogReference catalog)
+            throws SQLException {
+        return getTableDefinitions(databaseMetaData, List.of());
+    }
+
+    @Override
+    public List<TableDefinition> getTableDefinitions(DatabaseMetaData databaseMetaData, CatalogReference catalog,
+            List<String> types) throws SQLException {
+        String[] typesArr = typesArrayForFilterNull(types);
+        return getTableDefinitions(databaseMetaData, catalog.name(), null, null, typesArr);
+    }
+
+    @Override
+    public List<TableDefinition> getTableDefinitions(DatabaseMetaData databaseMetaData, SchemaReference schema)
+            throws SQLException {
+        return getTableDefinitions(databaseMetaData, schema, List.of());
+    }
+
+    @Override
+    public List<TableDefinition> getTableDefinitions(DatabaseMetaData databaseMetaData, SchemaReference schema,
+            List<String> types) throws SQLException {
+        String[] typesArr = typesArrayForFilterNull(types);
+
+        String catalog = schema.catalog().map(CatalogReference::name).orElse(null);
+        return getTableDefinitions(databaseMetaData, catalog, schema.name(), null, typesArr);
+    }
+
+    @Override
+    public List<TableDefinition> getTableDefinitions(DatabaseMetaData databaseMetaData, TableReference table)
+            throws SQLException {
+
+        Optional<SchemaReference> oSchema = table.schema();
+        String schema = oSchema.map(SchemaReference::name).orElse(null);
+        Optional<CatalogReference> oCatalog = oSchema.flatMap(SchemaReference::catalog);
+        String catalog = oCatalog.map(CatalogReference::name).orElse(null);
+        String[] typesArr = new String[] { table.type() };
+
+        return getTableDefinitions(databaseMetaData, catalog, schema, table.name(), typesArr);
+    }
+
+    @Override
+    public List<TableDefinition> getTableDefinitions(DatabaseMetaData databaseMetaData, String catalog,
+            String schemaPattern, String tableNamePattern, String types[]) throws SQLException {
+
+        List<TableDefinition> tabeDefinitions = new ArrayList<>();
+        try (ResultSet rs = databaseMetaData.getTables(catalog, schemaPattern, tableNamePattern, types)) {
+            while (rs.next()) {
+                final Optional<String> oCatalogName = Optional.ofNullable(rs.getString("TABLE_CAT"));
+                final Optional<String> oSchemaName = Optional.ofNullable(rs.getString("TABLE_SCHEM"));
+                final String tableName = rs.getString("TABLE_NAME");
+                final String tableType = rs.getString("TABLE_TYPE");
+                final Optional<String> oRemarks = Optional.ofNullable(rs.getString("REMARKS"));
+                final Optional<String> oTypeCat = Optional.ofNullable(rs.getString("TYPE_CAT"));
+                final Optional<String> oTypeSchema = Optional.ofNullable(rs.getString("TYPE_SCHEM"));
+                final Optional<String> oTypeName = Optional.ofNullable(rs.getString("TYPE_NAME"));
+                final Optional<String> oSelfRefColName = Optional.ofNullable(rs.getString("SELF_REFERENCING_COL_NAME"));
+                final Optional<String> oRefGen = Optional.ofNullable(rs.getString("REF_GENERATION"));
+
+                Optional<CatalogReference> oCatRef = oCatalogName.map(cn -> new CatalogReferenceR(cn));
+                Optional<SchemaReference> oSchemaRef = oSchemaName.map(sn -> new SchemaReferenceR(oCatRef, sn));
+
+                TableReference tableReference = new TableReferenceR(oSchemaRef, tableName, tableType);
+                TableMetaData tableMetaData = new TableMetaDataR(oRemarks, oTypeCat, oTypeSchema, oTypeName,
+                        oSelfRefColName, oRefGen);
+
+                TableDefinition tableDefinition = new TableDefinitionR(tableReference, tableMetaData);
+                tabeDefinitions.add(tableDefinition);
+            }
+        }
+
+        return List.copyOf(tabeDefinitions);
+    }
+
+    @Override
+    public boolean tableExists(DatabaseMetaData databaseMetaData, TableReference table) throws SQLException {
+
+        Optional<SchemaReference> oSchema = table.schema();
+        String schema = oSchema.map(SchemaReference::name).orElse(null);
+        Optional<CatalogReference> oCatalog = oSchema.flatMap(SchemaReference::catalog);
+        String catalog = oCatalog.map(CatalogReference::name).orElse(null);
+        String[] typesArr = new String[] { table.type() };
+
+        return tableExists(databaseMetaData, catalog, schema, table.name(), typesArr);
+    }
+
+    @Override
+    public boolean tableExists(DatabaseMetaData databaseMetaData, String catalog, String schemaPattern,
+            String tableNamePattern, String types[]) throws SQLException {
+
+        try (ResultSet rs = databaseMetaData.getTables(catalog, schemaPattern, tableNamePattern, types)) {
+            return rs.next();
+        }
+    }
+
+    @Override
+    public List<TypeInfo> getTypeInfo(DatabaseMetaData databaseMetaData) throws SQLException {
 
         List<TypeInfo> typeInfos = new ArrayList<>();
         try (ResultSet rs = databaseMetaData.getTypeInfo()) {
@@ -183,17 +335,71 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public Optional<Integer> getColumnDataType(Connection connection, TableReference table, ColumnReference column)
+    public List<ColumnDefinition> getColumnDefinitions(DatabaseMetaData databaseMetaData, ColumnReference column)
             throws SQLException {
-        DatabaseMetaData databaseMetaData = connection.getMetaData();
-        String catalogName = connection.getCatalog();
-        String schemaName = table.schema().map(SchemaReference::name).orElse(null);
-        try (ResultSet rs = databaseMetaData.getColumns(catalogName, schemaName, table.name(), column.name());) {
+
+        Optional<TableReference> oTable = column.table();
+        String table = oTable.map(TableReference::name).orElse(null);
+        Optional<SchemaReference> oSchema = oTable.flatMap(TableReference::schema);
+        String schema = oSchema.map(SchemaReference::name).orElse(null);
+        Optional<CatalogReference> oCatalog = oSchema.flatMap(SchemaReference::catalog);
+        String catalog = oCatalog.map(CatalogReference::name).orElse(null);
+
+        return getColumnDefinitions(databaseMetaData, catalog, schema, table, catalog);
+    }
+
+    @Override
+    public List<ColumnDefinition> getColumnDefinitions(DatabaseMetaData databaseMetaData, String catalog,
+            String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+        List<ColumnDefinition> columnDefinitions = new ArrayList<>();
+
+        try (ResultSet rs = databaseMetaData.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);) {
             while (rs.next()) {
-                return Optional.ofNullable(rs.getInt("DATA_TYPE"));
+
+                final Optional<String> oCatalogName = Optional.ofNullable(rs.getString("TABLE_CAT"));
+                final Optional<String> oSchemaName = Optional.ofNullable(rs.getString("TABLE_SCHEM"));
+                final String tableName = rs.getString("TABLE_NAME");
+                final String columName = rs.getString("COLUMN_NAME");
+                final int dataType = rs.getInt("DATA_TYPE");
+                final int columnSize = rs.getInt("COLUMN_SIZE");
+                final Optional<Integer> decimalDigits = Optional.ofNullable(rs.getInt("DECIMAL_DIGITS"));
+                final Optional<String> remarks = Optional.ofNullable(rs.getString("REMARKS"));
+
+                Optional<CatalogReference> oCatRef = oCatalogName.map(cn -> new CatalogReferenceR(cn));
+                Optional<SchemaReference> oSchemaRef = oSchemaName.map(sn -> new SchemaReferenceR(oCatRef, sn));
+
+                TableReference tableReference = new TableReferenceR(oSchemaRef, tableName);
+
+                ColumnReference columnReference = new ColumnReferenceR(Optional.of(tableReference), columName);
+                ColumnDefinition columnDefinition = new ColumnDefinitionR(columnReference,
+                        new ColumnMetaDataR(dataType, Optional.of(columnSize), decimalDigits, remarks));
+
+                columnDefinitions.add(columnDefinition);
             }
         }
-        return Optional.empty();
+        return List.copyOf(columnDefinitions);
+    }
+
+    @Override
+    public boolean columnExists(DatabaseMetaData databaseMetaData, ColumnReference column) throws SQLException {
+
+        Optional<TableReference> oTable = column.table();
+        String table = oTable.map(TableReference::name).orElse(null);
+        Optional<SchemaReference> oSchema = oTable.flatMap(TableReference::schema);
+        String schema = oSchema.map(SchemaReference::name).orElse(null);
+        Optional<CatalogReference> oCatalog = oSchema.flatMap(SchemaReference::catalog);
+        String catalog = oCatalog.map(CatalogReference::name).orElse(null);
+
+        return columnExists(databaseMetaData, catalog, schema, table, column.name());
+    }
+
+    @Override
+    public boolean columnExists(DatabaseMetaData databaseMetaData, String catalog, String schemaPattern,
+            String tableNamePattern, String columnNamePattern) throws SQLException {
+
+        try (ResultSet rs = databaseMetaData.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern)) {
+            return rs.next();
+        }
     }
 
 }

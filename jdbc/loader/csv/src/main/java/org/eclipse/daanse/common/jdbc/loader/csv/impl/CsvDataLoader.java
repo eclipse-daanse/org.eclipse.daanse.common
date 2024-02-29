@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,14 +38,15 @@ import org.eclipse.daanse.common.io.fs.watcher.api.propertytypes.FileSystemWatch
 import org.eclipse.daanse.common.jdbc.db.api.DatabaseService;
 import org.eclipse.daanse.common.jdbc.db.api.SqlStatementGenerator;
 import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDataType;
+import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDefinition;
+import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnMetaData;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
 import org.eclipse.daanse.common.jdbc.db.api.sql.SchemaReference;
 import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
 import org.eclipse.daanse.common.jdbc.db.api.sql.statement.InsertSqlStatement;
-import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnDataTypeR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnDefinitionR;
+import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnMetaDataR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.SchemaReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.TableReferenceR;
@@ -90,11 +92,12 @@ public class CsvDataLoader implements FileSystemWatcherListener {
     private SqlStatementGenerator sqlStatementGenerator;
 
     private Path basePath;
+    MetaInfo metaInfo;
 
     @Activate
     public void activate(CsvDataLoaderConfig config) throws SQLException {
         this.config = config;
-        MetaInfo metaInfo = databaseService.createMetaInfo(dataSource);
+        metaInfo = databaseService.createMetaInfo(dataSource);
         sqlStatementGenerator = databaseService.createSqlStatementGenerator(metaInfo);
     }
 
@@ -236,7 +239,7 @@ public class CsvDataLoader implements FileSystemWatcherListener {
         while (it.hasNext()) {
             NamedCsvRecord r = it.next();
 
-            int colIndex = 0;
+            int colIndex = 1;
             for (ColumnDefinition columnDefinition : columns) {
                 processingTypeValues(ps, columnDefinition, colIndex++, r);
             }
@@ -265,58 +268,58 @@ public class CsvDataLoader implements FileSystemWatcherListener {
             NamedCsvRecord r) throws SQLException {
 
         ColumnReference column = columnDefinition.column();
-        ColumnDataType type = columnDefinition.columnType();
-        String typeName = type.name();
         String field = r.getField(column.name());
 
         try {
-            setPrepareStatement(ps, index, typeName, field);
+            setPrepareStatement(ps, index, columnDefinition, field);
         } catch (SQLException e) {
             throw new CsvDataLoaderException(EXCEPTION_WHILE_SETTING_VALUE_TO_PREPARED_STATEMENT, e);
         }
     }
 
-    private void setPrepareStatement(PreparedStatement ps, int index, String typeName, String field)
+    private void setPrepareStatement(PreparedStatement ps, int index, ColumnDefinition columnDefinition, String field)
             throws SQLException {
+
+        ColumnMetaData type = columnDefinition.columnType();
 
         if (field == null || field.equals(config.nullValue())) {
             ps.setObject(index, null);
             return;
         }
-        switch (typeName.toUpperCase()) {
-        case "BOOLEAN": {
+        switch (type.dataType()) {
+        case Types.BOOLEAN: {
             ps.setBoolean(index, field.equals("") ? Boolean.FALSE : Boolean.valueOf(field));
             return;
         }
-        case "BIGINT": {
+        case Types.BIGINT: {
             ps.setLong(index, field.equals("") ? 0l : Long.valueOf(field));
             return;
         }
-        case "DATE": {
+        case Types.DATE: {
             ps.setDate(index, Date.valueOf(field));
             return;
         }
-        case "INTEGER": {
+        case Types.INTEGER: {
             ps.setInt(index, field.equals("") ? 0 : Integer.valueOf(field));
             return;
         }
-        case "DECIMAL": {
+        case Types.DECIMAL: {
             ps.setDouble(index, field.equals("") ? 0.0 : Double.valueOf(field));
             return;
         }
-        case "SMALLINT": {
+        case Types.SMALLINT: {
             ps.setShort(index, field.equals("") ? 0 : Short.valueOf(field));
             return;
         }
-        case "TIMESTAMP": {
+        case Types.TIMESTAMP: {
             ps.setTimestamp(index, Timestamp.valueOf(field));
             return;
         }
-        case "TIME": {
+        case Types.TIME: {
             ps.setTime(index, Time.valueOf(field));
             return;
         }
-        case "VARCHAR": {
+        case Types.VARCHAR: {
             ps.setString(index, field);
             return;
         }
@@ -329,7 +332,7 @@ public class CsvDataLoader implements FileSystemWatcherListener {
         List<ColumnDefinition> result = new ArrayList<>();
         if (types != null) {
             for (String header : types.getHeader()) {
-                ColumnDataTypeR sqlType = parseColumnDataType(types.getField(header));
+                ColumnMetaDataR sqlType = parseColumnDataType(types.getField(header));
                 ColumnDefinition dbc = new ColumnDefinitionR(new ColumnReferenceR(header), sqlType);
                 result.add(dbc);
             }
@@ -337,11 +340,12 @@ public class CsvDataLoader implements FileSystemWatcherListener {
         return result;
     }
 
-    private ColumnDataTypeR parseColumnDataType(String stringType) {
+    private ColumnMetaDataR parseColumnDataType(String stringType) {
         int indexStart = stringType.indexOf("(");
         int indexEnd = stringType.indexOf(")");
 
         String type = null;
+
         String detail = null;
         if (indexStart > 0) {
             type = stringType.substring(0, indexStart);
@@ -349,7 +353,39 @@ public class CsvDataLoader implements FileSystemWatcherListener {
         } else {
             type = stringType;
         }
-        return new ColumnDataTypeR(type, Optional.ofNullable(detail));
+
+        String[] det = detail == null ? new String[] {} : detail.split("\\.");
+
+        // may use Types Metadata
+        int iType = switch (type) {
+        case "BOOLEAN" -> Types.BOOLEAN;
+        case "BIGINT" -> Types.BIGINT;
+        case "DATE" -> Types.DATE;
+        case "DOUBLE" -> Types.DOUBLE;
+        case "FLOAT" -> Types.FLOAT;
+        case "SMALLINT" -> Types.SMALLINT;
+        case "INTEGER" -> Types.INTEGER;
+        case "NUMERIC" -> Types.NUMERIC;
+        case "DECIMAL" -> Types.DECIMAL;
+        case "TIME" -> Types.TIME;
+        case "TIMESTAMP" -> Types.TIMESTAMP;
+        case "VARCHAR" -> Types.VARCHAR;
+        default -> Types.VARCHAR;
+        };
+
+        Optional<Integer> columnSize = Optional.empty();
+        Optional<Integer> decimalDigits = Optional.empty();
+
+        if (det.length > 0) {
+            columnSize = Optional.of(Integer.parseInt(det[0]));
+            if (det.length > 1) {
+                decimalDigits = Optional.of(Integer.parseInt(det[1]));
+            }
+        }
+
+        Optional<TypeInfo> oType = metaInfo.typeInfos().stream().filter(ti -> ti.dataType() == iType).findFirst();
+        int typeName = oType.map(TypeInfo::dataType).orElse(Types.VARCHAR);
+        return new ColumnMetaDataR(typeName, columnSize, decimalDigits, Optional.empty());
     }
 
     private String getFileNameWithoutExtension(String fileName) {

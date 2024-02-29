@@ -31,6 +31,5 @@ class ServiceTest {
     @Test
     void serviceWithConfigurationTest(@InjectService(timeout = 500) DatabaseService databaseService) throws Exception {
         assertThat(databaseService).isNotNull();
-
     }
 }

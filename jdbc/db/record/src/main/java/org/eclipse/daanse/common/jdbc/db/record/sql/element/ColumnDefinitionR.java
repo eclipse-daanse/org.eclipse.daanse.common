@@ -15,8 +15,8 @@ package org.eclipse.daanse.common.jdbc.db.record.sql.element;
 
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDefinition;
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDataType;
+import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnMetaData;
 
-public record ColumnDefinitionR(ColumnReference column, ColumnDataType columnType) implements ColumnDefinition {
+public record ColumnDefinitionR(ColumnReference column, ColumnMetaData columnType) implements ColumnDefinition {
 
 }

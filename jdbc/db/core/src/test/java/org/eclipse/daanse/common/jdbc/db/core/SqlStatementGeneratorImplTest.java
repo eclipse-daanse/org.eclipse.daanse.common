@@ -14,16 +14,19 @@
 package org.eclipse.daanse.common.jdbc.db.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
+import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.daanse.common.jdbc.db.api.SqlStatementGenerator;
+import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo;
 import org.eclipse.daanse.common.jdbc.db.record.meta.DatabaseInfoR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.IdentifierInfoR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.MetaInfoR;
-import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnDataTypeR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnDefinitionR;
+import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnMetaDataR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.SchemaReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.TableReferenceR;
@@ -33,12 +36,29 @@ import org.eclipse.daanse.common.jdbc.db.record.sql.statement.DropContainerSqlSt
 import org.eclipse.daanse.common.jdbc.db.record.sql.statement.DropSchemaSqlStatementR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.statement.InsertSqlStatementR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.statement.TruncateTableSqlStatementR;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class SqlStatementGeneratorImplTest {
 
-    private SqlStatementGenerator generator = new SqlStatementGeneratorImpl(
-            new MetaInfoR(new DatabaseInfoR("", "", 0, 0), new IdentifierInfoR("#"), List.of(), List.of()));
+    static TypeInfo typeInfoVarchar;
+
+    static TypeInfo typeInfoInt;
+
+    @BeforeAll
+    static void beforeAll() {
+        typeInfoVarchar = Mockito.mock(TypeInfo.class);
+        typeInfoInt = Mockito.mock(TypeInfo.class);
+        when(typeInfoVarchar.typeName()).thenReturn("varchar");
+        when(typeInfoVarchar.dataType()).thenReturn(Types.VARCHAR);
+        when(typeInfoInt.typeName()).thenReturn("int");
+        when(typeInfoInt.dataType()).thenReturn(Types.INTEGER);
+    }
+
+    private SqlStatementGenerator generator = new SqlStatementGeneratorImpl(new MetaInfoR(
+            new DatabaseInfoR("", "", 0, 0), new IdentifierInfoR("#"), List.of(typeInfoVarchar, typeInfoInt),
+            List.of()));
 
     @Test
     void dropTableNoSchemaNoExist() {
@@ -143,11 +163,13 @@ class SqlStatementGeneratorImplTest {
 
     @Test
     void createTableWithSchema() {
+
         String sql = generator.getSqlOfStatement(new CreateContainerSqlStatementR(
                 new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnDefinitionR(new ColumnReferenceR("Col1"),
-                        new ColumnDataTypeR("int", Optional.empty()))),
+                        new ColumnMetaDataR(Types.INTEGER, Optional.empty(), Optional.empty(), Optional.empty()))),
                 true));
+
         assertThat(sql).isEqualTo("CREATE TABLE IF NOT EXISTS #theSchemaName#.#theTableName#( #Col1# int)");
 
     }
@@ -157,7 +179,7 @@ class SqlStatementGeneratorImplTest {
         String sql = generator.getSqlOfStatement(new CreateContainerSqlStatementR(
                 new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnDefinitionR(new ColumnReferenceR("Col1"),
-                        new ColumnDataTypeR("varchar", Optional.of("200")))),
+                        new ColumnMetaDataR(Types.VARCHAR, Optional.of(200), Optional.empty(), Optional.empty()))),
                 true));
         assertThat(sql).isEqualTo("CREATE TABLE IF NOT EXISTS #theSchemaName#.#theTableName#( #Col1# varchar(200))");
 
@@ -168,9 +190,10 @@ class SqlStatementGeneratorImplTest {
         String sql = generator.getSqlOfStatement(new CreateContainerSqlStatementR(
                 new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnDefinitionR(new ColumnReferenceR("Col1"),
-                        new ColumnDataTypeR("int", Optional.empty())),
+                        new ColumnMetaDataR(Types.INTEGER, Optional.empty(), Optional.empty(), Optional.empty())),
                         new ColumnDefinitionR(new ColumnReferenceR("Col2"),
-                                new ColumnDataTypeR("int", Optional.empty()))),
+                                new ColumnMetaDataR(Types.INTEGER, Optional.empty(), Optional.empty(),
+                                        Optional.empty()))),
                 true));
         assertThat(sql).isEqualTo("CREATE TABLE IF NOT EXISTS #theSchemaName#.#theTableName#( #Col1# int, #Col2# int)");
     }
@@ -190,7 +213,6 @@ class SqlStatementGeneratorImplTest {
                 new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnReferenceR("Col1")), List.of("?")));
         assertThat(sql).isEqualTo("INSERT INTO #theSchemaName#.#theTableName#(#Col1#) VALUES (?)");
-
     }
 
 }

@@ -49,6 +49,7 @@
 	assertj-core;version='[3.25.3,3.25.4)',\
 	ch.qos.logback.classic;version='[1.5.0,1.5.1)',\
 	ch.qos.logback.core;version='[1.5.0,1.5.1)',\
+	com.h2database;version='[2.2.224,2.2.225)',\
 	junit-jupiter-api;version='[5.10.2,5.10.3)',\
 	junit-jupiter-engine;version='[5.10.2,5.10.3)',\
 	junit-jupiter-params;version='[5.10.2,5.10.3)',\

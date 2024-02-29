@@ -13,6 +13,10 @@
 */
 package org.eclipse.daanse.common.jdbc.db.api.sql;
 
+import java.util.Optional;
+
 public interface ColumnReference extends Named {
+
+    Optional<TableReference> table();
 
 }

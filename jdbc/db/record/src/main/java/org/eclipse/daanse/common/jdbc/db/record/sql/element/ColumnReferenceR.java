@@ -13,8 +13,14 @@
 */
 package org.eclipse.daanse.common.jdbc.db.record.sql.element;
 
+import java.util.Optional;
+
 import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
 
-public record ColumnReferenceR(String name) implements ColumnReference {
+public record ColumnReferenceR(Optional<TableReference> table, String name) implements ColumnReference {
 
+    public ColumnReferenceR(String name) {
+        this(Optional.empty(), name);
+    }
 }

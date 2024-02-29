@@ -17,5 +17,5 @@ public interface ColumnDefinition {
 
     ColumnReference column();
 
-    ColumnDataType columnType();
+    ColumnMetaData columnType();
 }

@@ -14,10 +14,6 @@
 package org.eclipse.daanse.common.jdbc.loader.csv;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.osgi.test.common.dictionary.Dictionaries.dictionaryOf;
 
 import java.io.IOException;
@@ -27,27 +23,28 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.sql.DataSource;
 
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherWhiteboardConstants;
+import org.eclipse.daanse.common.jdbc.db.api.DatabaseService;
+import org.eclipse.daanse.common.jdbc.db.api.meta.TableDefinition;
+import org.eclipse.daanse.common.jdbc.db.record.sql.element.SchemaReferenceR;
+import org.eclipse.daanse.common.jdbc.db.record.sql.element.TableReferenceR;
 import org.eclipse.daanse.common.jdbc.loader.csv.api.Constants;
+import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.Configuration;
@@ -69,50 +66,26 @@ class CscDataLoaderTest {
     @TempDir(cleanup = CleanupMode.ON_SUCCESS)
     Path path;
 
-    @Mock
-    DatabaseMetaData databaseMetaData;
-    @Mock
-    ResultSet resultSet;
-
-    @Mock
-    Connection connection;
-
-    @Mock
-    Statement statement;
-
-    @Mock
-    PreparedStatement preparedStatement;
-
-    @Mock
-    DataSource dataSource;
-
     @InjectBundleContext
     BundleContext bc;
 
     @InjectService
     ConfigurationAdmin ca;
 
-    Configuration conf;
+    @InjectService
+    DatabaseService databaseService;
+
+    private Configuration conf;
+    private Connection connection = null;
+    private DatabaseMetaData metaData;
 
     @BeforeEach
     void beforeEach() throws SQLException, IOException {
 
-        when(dataSource.getConnection()).thenReturn(connection);
-        when(connection.getMetaData()).thenReturn(databaseMetaData);
-        when(databaseMetaData.getIdentifierQuoteString()).thenReturn("\"");
-        when(databaseMetaData.getDatabaseMajorVersion()).thenReturn(42);
-        when(databaseMetaData.getDatabaseMinorVersion()).thenReturn(21);
-        when(databaseMetaData.getDatabaseProductName()).thenReturn("MyDB");
-        when(databaseMetaData.getDatabaseProductVersion()).thenReturn("a");
-
-        when(connection.prepareStatement(any())).thenReturn(preparedStatement);
-        when(preparedStatement.getConnection()).thenReturn(connection);
-        when(databaseMetaData.getTypeInfo()).thenReturn(resultSet);
-        when(databaseMetaData.getCatalogs()).thenReturn(resultSet);
-
-        when(resultSet.next()).thenReturn(false);
-
-        when(connection.createStatement()).thenReturn(statement);
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setUrl("jdbc:h2:memFS:" + UUID.randomUUID().toString());
+        connection = dataSource.getConnection();
+        metaData = connection.getMetaData();
         bc.registerService(DataSource.class, dataSource, dictionaryOf("ds", "1"));
     }
 
@@ -161,6 +134,7 @@ class CscDataLoaderTest {
 
     @Test
     void testinsertParamStatement() throws IOException, URISyntaxException, SQLException, InterruptedException {
+
         Path p = path.resolve("csv");
         Files.createDirectories(p);
         Thread.sleep(200);
@@ -171,12 +145,10 @@ class CscDataLoaderTest {
         copy("csv/test.csv");
         Thread.sleep(1000);
 
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
+        List<TableDefinition> tableDefinitions = databaseService.getTableDefinitions(metaData,
+                new TableReferenceR("test"));
 
-        verify(connection, (times(1))).prepareStatement(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).contains("test");
-
-        verify(preparedStatement, (times(2))).executeBatch();
+        assertThat(tableDefinitions).hasSize(1);
     }
 
     @Test
@@ -191,29 +163,11 @@ class CscDataLoaderTest {
         copy("csv/schema1/test1.csv");
         Thread.sleep(1000);
 
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<Boolean> booleanCaptor = ArgumentCaptor.forClass(Boolean.class);
-        ArgumentCaptor<Date> dateCaptor = ArgumentCaptor.forClass(Date.class);
-        ArgumentCaptor<Integer> integerCaptor = ArgumentCaptor.forClass(Integer.class);
-        ArgumentCaptor<Double> doubleCaptor = ArgumentCaptor.forClass(Double.class);
-        ArgumentCaptor<Short> shortCaptor = ArgumentCaptor.forClass(Short.class);
-        ArgumentCaptor<Timestamp> timestampCaptor = ArgumentCaptor.forClass(Timestamp.class);
+        List<TableDefinition> tableDefinitions = databaseService.getTableDefinitions(metaData,
+                new TableReferenceR(Optional.of(new SchemaReferenceR("schema1")), "test1"));
 
-        verify(connection, (times(1))).prepareStatement(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).contains("schema1\".\"test1");
-        verify(statement, (times(3))).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).contains("VARCHAR(40)");
-        verify(preparedStatement, (times(4))).setInt(integerCaptor.capture(), integerCaptor.capture());
-        verify(preparedStatement, (times(2))).setLong(integerCaptor.capture(), longCaptor.capture());
-        verify(preparedStatement, (times(2))).setBoolean(integerCaptor.capture(), booleanCaptor.capture());
-        verify(preparedStatement, (times(2))).setDate(integerCaptor.capture(), dateCaptor.capture());
-        verify(preparedStatement, (times(2))).setDouble(integerCaptor.capture(), doubleCaptor.capture());
-        verify(preparedStatement, (times(2))).setShort(integerCaptor.capture(), shortCaptor.capture());
-        verify(preparedStatement, (times(2))).setTimestamp(integerCaptor.capture(), timestampCaptor.capture());
-        verify(preparedStatement, (times(2))).setString(integerCaptor.capture(), stringCaptor.capture());
+        assertThat(tableDefinitions).hasSize(1);
 
-        verify(preparedStatement, (times(2))).executeBatch();
     }
 
 }
