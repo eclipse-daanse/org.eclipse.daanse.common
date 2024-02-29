@@ -335,6 +335,19 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
+    public List<ColumnDefinition> getColumnDefinitions(DatabaseMetaData databaseMetaData, TableReference table)
+            throws SQLException {
+
+        String sTable = table.name();
+        Optional<SchemaReference> oSchema = table.schema();
+        String schema = oSchema.map(SchemaReference::name).orElse(null);
+        Optional<CatalogReference> oCatalog = oSchema.flatMap(SchemaReference::catalog);
+        String catalog = oCatalog.map(CatalogReference::name).orElse(null);
+
+        return getColumnDefinitions(databaseMetaData, catalog, schema, sTable, null);
+    }
+
+    @Override
     public List<ColumnDefinition> getColumnDefinitions(DatabaseMetaData databaseMetaData, ColumnReference column)
             throws SQLException {
 
@@ -401,5 +414,6 @@ public class DatabaseServiceImpl implements DatabaseService {
             return rs.next();
         }
     }
+
 
 }

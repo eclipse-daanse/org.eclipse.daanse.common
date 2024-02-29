@@ -35,6 +35,8 @@ import javax.sql.DataSource;
 import org.eclipse.daanse.common.io.fs.watcher.api.FileSystemWatcherWhiteboardConstants;
 import org.eclipse.daanse.common.jdbc.db.api.DatabaseService;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TableDefinition;
+import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDefinition;
+import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.SchemaReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.TableReferenceR;
 import org.eclipse.daanse.common.jdbc.loader.csv.api.Constants;
@@ -145,10 +147,13 @@ class CscDataLoaderTest {
         copy("csv/test.csv");
         Thread.sleep(1000);
 
-        List<TableDefinition> tableDefinitions = databaseService.getTableDefinitions(metaData,
-                new TableReferenceR("test"));
+        TableReference table = new TableReferenceR("test");
 
+        List<TableDefinition> tableDefinitions = databaseService.getTableDefinitions(metaData, table);
         assertThat(tableDefinitions).hasSize(1);
+
+        List<ColumnDefinition> columnDefinitions = databaseService.getColumnDefinitions(metaData, table);
+        assertThat(columnDefinitions).hasSize(10);
     }
 
     @Test
@@ -163,10 +168,12 @@ class CscDataLoaderTest {
         copy("csv/schema1/test1.csv");
         Thread.sleep(1000);
 
-        List<TableDefinition> tableDefinitions = databaseService.getTableDefinitions(metaData,
-                new TableReferenceR(Optional.of(new SchemaReferenceR("schema1")), "test1"));
-
+        TableReference table = new TableReferenceR(Optional.of(new SchemaReferenceR("schema1")), "test1");
+        List<TableDefinition> tableDefinitions = databaseService.getTableDefinitions(metaData, table);
         assertThat(tableDefinitions).hasSize(1);
+
+        List<ColumnDefinition> columnDefinitions = databaseService.getColumnDefinitions(metaData, table);
+        assertThat(columnDefinitions).hasSize(10);
 
     }
 

@@ -81,6 +81,19 @@ public interface DatabaseService {
             throws SQLException;
 
     /**
+     * returns a {@link List} of {@link ColumnDefinition}s for the given
+     * {@link TableReference}
+     *
+     * @param databaseMetaData
+     * @param table
+     * @return
+     * @throws SQLException
+     */
+
+    List<ColumnDefinition> getColumnDefinitions(DatabaseMetaData databaseMetaData, TableReference table)
+            throws SQLException;
+
+    /**
      * Checks if a Table with the given {@link Parameter}s exist.
      *
      * @param databaseMetaData
@@ -108,7 +121,6 @@ public interface DatabaseService {
      * returns all {@link TableDefinition}s .
      *
      * @param databaseMetaData
-     * @param table
      * @return
      * @throws SQLException
      */
@@ -176,7 +188,6 @@ public interface DatabaseService {
      *
      * @param databaseMetaData
      * @param table
-     * @param types
      * @return
      * @throws SQLException
      */
