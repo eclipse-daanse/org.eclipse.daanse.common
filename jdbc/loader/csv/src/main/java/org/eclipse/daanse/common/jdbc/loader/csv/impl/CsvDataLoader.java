@@ -357,7 +357,7 @@ public class CsvDataLoader implements FileSystemWatcherListener {
         String[] det = detail == null ? new String[] {} : detail.split("\\.");
 
         // may use Types Metadata
-        int iType = switch (type) {
+        int sqlDataType = switch (type) {
         case "BOOLEAN" -> Types.BOOLEAN;
         case "BIGINT" -> Types.BIGINT;
         case "DATE" -> Types.DATE;
@@ -383,9 +383,32 @@ public class CsvDataLoader implements FileSystemWatcherListener {
             }
         }
 
-        Optional<TypeInfo> oType = metaInfo.typeInfos().stream().filter(ti -> ti.dataType() == iType).findFirst();
+        Optional<TypeInfo> oType = getTypeInfoForSqlDataType(sqlDataType);
+        if (oType.isEmpty()) {
+            oType = getTypeInfoForSqlDataTypeFallBack(sqlDataType);
+        }
+
         int typeName = oType.map(TypeInfo::dataType).orElse(Types.VARCHAR);
         return new ColumnMetaDataR(typeName, columnSize, decimalDigits, Optional.empty());
+    }
+
+    private Optional<TypeInfo> getTypeInfoForSqlDataTypeFallBack(int sqlDataType) {
+
+        int altSqlDataType = switch (sqlDataType) {
+        case Types.BOOLEAN -> Types.INTEGER;
+        case Types.DOUBLE -> Types.FLOAT;
+        case Types.FLOAT -> Types.FLOAT;
+        case Types.SMALLINT -> Types.INTEGER;
+        case Types.NUMERIC -> Types.DECIMAL;
+        case Types.DECIMAL -> Types.NUMERIC;
+        default -> Types.VARCHAR;
+        };
+        return getTypeInfoForSqlDataType(altSqlDataType);
+    }
+
+    private Optional<TypeInfo> getTypeInfoForSqlDataType(int sqlDataType) {
+        Optional<TypeInfo> oType = metaInfo.typeInfos().stream().filter(ti -> ti.dataType() == sqlDataType).findFirst();
+        return oType;
     }
 
     private String getFileNameWithoutExtension(String fileName) {
