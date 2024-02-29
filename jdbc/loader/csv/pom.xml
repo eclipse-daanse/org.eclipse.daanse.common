@@ -57,11 +57,6 @@
             <version>2.2.224</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>biz.aQute.bnd</groupId>
-            <artifactId>biz.aQute.bndlib</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.eclipse.daanse</groupId>

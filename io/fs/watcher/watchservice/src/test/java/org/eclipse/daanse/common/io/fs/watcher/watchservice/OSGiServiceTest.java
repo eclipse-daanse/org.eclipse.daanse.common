@@ -35,10 +35,12 @@ import org.osgi.service.component.annotations.RequireServiceComponentRuntime;
 import org.osgi.test.common.annotation.InjectBundleContext;
 import org.osgi.test.junit5.context.BundleContextExtension;
 
+import aQute.bnd.annotation.spi.ServiceProvider;
+
 @RequireServiceComponentRuntime
 @RequireConfigurationAdmin
-
 @ExtendWith(BundleContextExtension.class)
+@ServiceProvider(value = FileSystemWatcherListener.class)
 class OSGiServiceTest {
 
     private static Duration WAIT_MOST = Duration.ofSeconds(10);

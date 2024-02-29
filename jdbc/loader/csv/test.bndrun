@@ -20,7 +20,7 @@
 
 -tester: biz.aQute.tester.junit-platform
 
-# JaCoCo calculates test coverage	
+# JaCoCo calculates test coverage
 -runpath.jacoco:\
 	org.jacoco.agent,\
 	org.jacoco.agent.rt
