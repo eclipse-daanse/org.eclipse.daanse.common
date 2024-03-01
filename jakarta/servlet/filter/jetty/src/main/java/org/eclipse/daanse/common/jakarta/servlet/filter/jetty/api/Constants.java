@@ -13,7 +13,7 @@
 */
 package org.eclipse.daanse.common.jakarta.servlet.filter.jetty.api;
 
-import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.eclipse.jetty.ee10.servlets.CrossOriginFilter;
 import org.osgi.service.servlet.whiteboard.HttpWhiteboardConstants;
 
 /**
@@ -70,12 +70,6 @@ public class Constants {
      */
     public static final String FILTER_CORS_PROP_INIT_EXPOSED_HEADERS_PARAM = PREFIX_FILTER_INIT
             + CrossOriginFilter.EXPOSED_HEADERS_PARAM;
-    /*
-     * OLD_CHAIN_PREFLIGHT_PARAM {@link CrossOriginFilter#ALLOWED_ORIGINS_PARAM}
-     * Configuration Property for the of the CrossOriginFilter
-     */
-    public static final String FILTER_CORS_PROP_INIT_OLD_CHAIN_PREFLIGHT_PARAM = PREFIX_FILTER_INIT
-            + CrossOriginFilter.OLD_CHAIN_PREFLIGHT_PARAM;
     /**
      * {@link CrossOriginFilter#CHAIN_PREFLIGHT_PARAM} Configuration Property for
      * the of the CrossOriginFilter

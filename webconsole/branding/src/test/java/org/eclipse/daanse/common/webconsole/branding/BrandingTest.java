@@ -23,7 +23,9 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Base64;
 
 import org.junit.jupiter.api.Test;
+import org.osgi.service.servlet.whiteboard.annotations.RequireHttpWhiteboard;
 
+@RequireHttpWhiteboard
 class BrandingTest {
 
     private static final String getBasicAuthenticationHeader(String username, String password) {

@@ -22,11 +22,8 @@
   <artifactId>org.eclipse.daanse.common.webconsole.branding</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-
   <build>
-
     <plugins>
-
       <!-- This bundle is a Fragment, the test Bundle does not need to be a
       Fragment too.  -->
       <plugin>
