@@ -27,6 +27,7 @@ import org.eclipse.daanse.common.jdbc.db.api.DatabaseService;
 import org.eclipse.daanse.common.jdbc.db.api.SqlStatementGenerator;
 import org.eclipse.daanse.common.jdbc.db.api.meta.DatabaseInfo;
 import org.eclipse.daanse.common.jdbc.db.api.meta.IdentifierInfo;
+import org.eclipse.daanse.common.jdbc.db.api.meta.ImportedKey;
 import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TableDefinition;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TableDefinition.TableMetaData;
@@ -40,6 +41,7 @@ import org.eclipse.daanse.common.jdbc.db.api.sql.SchemaReference;
 import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
 import org.eclipse.daanse.common.jdbc.db.record.meta.DatabaseInfoR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.IdentifierInfoR;
+import org.eclipse.daanse.common.jdbc.db.record.meta.ImportedKeyR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.MetaInfoR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.TableDefinitionR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.TableMetaDataR;
@@ -415,5 +417,52 @@ public class DatabaseServiceImpl implements DatabaseService {
         }
     }
 
+    @Override
+    public List<ImportedKey> getImportedKeys(DatabaseMetaData databaseMetaData, TableReference table)
+            throws SQLException {
+
+        Optional<SchemaReference> oSchema = table.schema();
+        String schema = oSchema.map(SchemaReference::name).orElse(null);
+        Optional<CatalogReference> oCatalog = oSchema.flatMap(SchemaReference::catalog);
+        String catalog = oCatalog.map(CatalogReference::name).orElse(null);
+        return getImportedKeys(databaseMetaData, catalog, schema, table.name());
+    }
+
+    @Override
+    public List<ImportedKey> getImportedKeys(DatabaseMetaData databaseMetaData, String catalog, String schema,
+            String tableName) throws SQLException {
+        List<ImportedKey> importedKeys = new ArrayList<>();
+
+        try (ResultSet rs = databaseMetaData.getImportedKeys(catalog, schema, tableName);) {
+            while (rs.next()) {
+
+                final Optional<String> oCatalogNamePK = Optional.ofNullable(rs.getString("PKTABLE_CAT"));
+                final Optional<String> oSchemaNamePk = Optional.ofNullable(rs.getString("PKTABLE_SCHEM"));
+                final String tableNamePk = rs.getString("PKTABLE_NAME");
+                final String columNamePk = rs.getString("PKCOLUMN_NAME");
+
+                final Optional<String> oCatalogNameFK = Optional.ofNullable(rs.getString("FKTABLE_CAT"));
+                final Optional<String> oSchemaNameFk = Optional.ofNullable(rs.getString("FKTABLE_SCHEM"));
+                final String tableNameFk = rs.getString("FKTABLE_NAME");
+                final String columNameFk = rs.getString("FKCOLUMN_NAME");
+
+                // PK
+                Optional<CatalogReference> oCatRefPk = oCatalogNamePK.map(cn -> new CatalogReferenceR(cn));
+                Optional<SchemaReference> oSchemaRefPk = oSchemaNamePk.map(sn -> new SchemaReferenceR(oCatRefPk, sn));
+                TableReference tableReferencePk = new TableReferenceR(oSchemaRefPk, tableNamePk);
+                ColumnReference primaryKeyColumn = new ColumnReferenceR(Optional.of(tableReferencePk), columNamePk);
+
+                // FK
+                Optional<CatalogReference> oCatRefFk = oCatalogNameFK.map(cn -> new CatalogReferenceR(cn));
+                Optional<SchemaReference> oSchemaRefFk = oSchemaNameFk.map(sn -> new SchemaReferenceR(oCatRefFk, sn));
+                TableReference tableReferenceFk = new TableReferenceR(oSchemaRefFk, tableNameFk);
+                ColumnReference foreignKeyColumn = new ColumnReferenceR(Optional.of(tableReferenceFk), columNameFk);
+
+                ImportedKey importedKey = new ImportedKeyR(primaryKeyColumn, foreignKeyColumn);
+                importedKeys.add(importedKey);
+            }
+        }
+        return List.copyOf(importedKeys);
+    }
 
 }

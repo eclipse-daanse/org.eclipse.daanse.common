@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.eclipse.daanse.common.jdbc.db.api.meta.ImportedKey;
 import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TableDefinition;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo;
@@ -296,5 +297,29 @@ public interface DatabaseService {
      */
     List<TypeInfo> getTypeInfo(DatabaseMetaData databaseMetaData) throws SQLException;
 
+    /**
+     * returns a {@link List} of {@link ImportedKey}s according
+     * {@link DatabaseMetaData#getImportedKeys(String, String, String)}
+     *
+     * @param databaseMetaData
+     * @param catalog
+     * @param schema
+     * @param tableName
+     * @return
+     * @throws SQLException
+     */
+    List<ImportedKey> getImportedKeys(DatabaseMetaData databaseMetaData, String catalog, String schema,
+            String tableName) throws SQLException;
+
+    /**
+     * returns a {@link List} of {@link ImportedKey}s according
+     * {@link DatabaseMetaData#getImportedKeys(String, String, String)}
+     *
+     * @param databaseMetaData
+     * @param table
+     * @return
+     * @throws SQLException
+     */
+    List<ImportedKey> getImportedKeys(DatabaseMetaData databaseMetaData, TableReference table) throws SQLException;
 
 }
