@@ -360,7 +360,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         Optional<CatalogReference> oCatalog = oSchema.flatMap(SchemaReference::catalog);
         String catalog = oCatalog.map(CatalogReference::name).orElse(null);
 
-        return getColumnDefinitions(databaseMetaData, catalog, schema, table, catalog);
+        return getColumnDefinitions(databaseMetaData, catalog, schema, table, column.name());
     }
 
     @Override
