@@ -14,13 +14,14 @@
 package org.eclipse.daanse.common.jdbc.db.api.meta;
 
 import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface TypeInfo {
 
     String typeName();
-    int dataType();
+    JDBCType dataType();
     int percision();
     Optional<String> literatPrefix();
     Optional<String> literatSuffix();

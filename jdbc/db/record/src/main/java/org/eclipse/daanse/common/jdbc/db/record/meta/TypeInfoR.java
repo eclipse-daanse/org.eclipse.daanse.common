@@ -13,11 +13,12 @@
 */
 package org.eclipse.daanse.common.jdbc.db.record.meta;
 
+import java.sql.JDBCType;
 import java.util.Optional;
 
 import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo;
 
-public record TypeInfoR(String typeName, int dataType, int percision, Optional<String> literatPrefix,
+public record TypeInfoR(String typeName, JDBCType dataType, int percision, Optional<String> literatPrefix,
         Optional<String> literatSuffix, Optional<String> createPragmas, Nullable nullable, boolean caseSensitive,
         Searchable searchable, boolean unsignesAttribute, boolean fixedPrecScale, boolean autoIncrement,
         Optional<String> localTypeName, short minimumScale, short maximumScale, int numPrecRadix) implements TypeInfo {

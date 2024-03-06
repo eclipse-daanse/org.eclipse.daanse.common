@@ -20,6 +20,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent.Kind;
 import java.sql.Connection;
 import java.sql.Date;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -286,46 +287,51 @@ public class CsvDataLoader implements FileSystemWatcherListener {
             return;
         }
         switch (type.dataType()) {
-        case Types.BOOLEAN: {
+        case BOOLEAN: {
             ps.setBoolean(index, field.equals("") ? Boolean.FALSE : Boolean.valueOf(field));
             return;
         }
-        case Types.BIGINT: {
+        case BIGINT: {
             ps.setLong(index, field.equals("") ? 0l : Long.valueOf(field));
             return;
         }
-        case Types.DATE: {
+        case DATE: {
             ps.setDate(index, Date.valueOf(field));
             return;
         }
-        case Types.INTEGER: {
+        case INTEGER: {
             ps.setInt(index, field.equals("") ? 0 : Integer.valueOf(field));
             return;
         }
-        case Types.DECIMAL: {
+        case DECIMAL: {
             ps.setDouble(index, field.equals("") ? 0.0 : Double.valueOf(field));
             return;
         }
-        case Types.NUMERIC: {
+        case NUMERIC: {
             ps.setDouble(index, field.equals("") ? 0.0 : Double.valueOf(field));
             return;
         }
-        case Types.SMALLINT: {
+        case REAL: {
+            ps.setDouble(index, field.equals("") ? 0.0 : Double.valueOf(field));
+            return;
+        }
+        case SMALLINT: {
             ps.setShort(index, field.equals("") ? 0 : Short.valueOf(field));
             return;
         }
-        case Types.TIMESTAMP: {
+        case TIMESTAMP: {
             ps.setTimestamp(index, Timestamp.valueOf(field));
             return;
         }
-        case Types.TIME: {
+        case TIME: {
             ps.setTime(index, Time.valueOf(field));
             return;
         }
-        case Types.VARCHAR: {
+        case VARCHAR: {
             ps.setString(index, field);
             return;
         }
+
         default:
             ps.setString(index, field);
         }
@@ -347,34 +353,25 @@ public class CsvDataLoader implements FileSystemWatcherListener {
         int indexStart = stringType.indexOf("(");
         int indexEnd = stringType.indexOf(")");
 
-        String type = null;
+        String sType = null;
 
         String detail = null;
         if (indexStart > 0) {
-            type = stringType.substring(0, indexStart);
+            sType = stringType.substring(0, indexStart);
             detail = stringType.substring(indexStart + 1, indexEnd);
         } else {
-            type = stringType;
+            sType = stringType;
         }
 
         String[] det = detail == null ? new String[] {} : detail.split("\\.");
 
-        // may use Types Metadata
-        int sqlDataType = switch (type) {
-        case "BOOLEAN" -> Types.BOOLEAN;
-        case "BIGINT" -> Types.BIGINT;
-        case "DATE" -> Types.DATE;
-        case "DOUBLE" -> Types.DOUBLE;
-        case "FLOAT" -> Types.FLOAT;
-        case "SMALLINT" -> Types.SMALLINT;
-        case "INTEGER" -> Types.INTEGER;
-        case "NUMERIC" -> Types.NUMERIC;
-        case "DECIMAL" -> Types.DECIMAL;
-        case "TIME" -> Types.TIME;
-        case "TIMESTAMP" -> Types.TIMESTAMP;
-        case "VARCHAR" -> Types.VARCHAR;
-        default -> Types.VARCHAR;
-        };
+
+        JDBCType jdbcType=JDBCType.valueOf(sType);
+
+
+        if(jdbcType==null) {
+            jdbcType = JDBCType.VARCHAR;
+        }
 
         Optional<Integer> columnSize = Optional.empty();
         Optional<Integer> decimalDigits = Optional.empty();
@@ -386,32 +383,7 @@ public class CsvDataLoader implements FileSystemWatcherListener {
             }
         }
 
-        Optional<TypeInfo> oType = getTypeInfoForSqlDataType(sqlDataType);
-        if (oType.isEmpty()) {
-            oType = getTypeInfoForSqlDataTypeFallBack(sqlDataType);
-        }
-
-        int typeName = oType.map(TypeInfo::dataType).orElse(Types.VARCHAR);
-        return new ColumnMetaDataR(typeName, columnSize, decimalDigits, Optional.empty());
-    }
-
-    private Optional<TypeInfo> getTypeInfoForSqlDataTypeFallBack(int sqlDataType) {
-
-        int altSqlDataType = switch (sqlDataType) {
-        case Types.BOOLEAN -> Types.INTEGER;
-        case Types.DOUBLE -> Types.FLOAT;
-        case Types.FLOAT -> Types.FLOAT;
-        case Types.SMALLINT -> Types.INTEGER;
-        case Types.NUMERIC -> Types.DECIMAL;
-        case Types.DECIMAL -> Types.NUMERIC;
-        default -> Types.VARCHAR;
-        };
-        return getTypeInfoForSqlDataType(altSqlDataType);
-    }
-
-    private Optional<TypeInfo> getTypeInfoForSqlDataType(int sqlDataType) {
-        Optional<TypeInfo> oType = metaInfo.typeInfos().stream().filter(ti -> ti.dataType() == sqlDataType).findFirst();
-        return oType;
+        return new ColumnMetaDataR(jdbcType, columnSize, decimalDigits, Optional.empty());
     }
 
     private String getFileNameWithoutExtension(String fileName) {

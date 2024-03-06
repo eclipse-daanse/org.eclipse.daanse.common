@@ -13,6 +13,8 @@
 */
 package org.eclipse.daanse.common.jdbc.db.core;
 
+import java.util.Optional;
+
 import org.eclipse.daanse.common.jdbc.db.api.SqlStatementGenerator;
 import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo;
@@ -136,11 +138,12 @@ public class SqlStatementGeneratorImpl implements SqlStatementGenerator {
 
             ColumnMetaData dataType = columnDefinition.columnType();
 
-            TypeInfo typeInfo = metaInfo.typeInfos().stream().filter(t -> {
+            Optional<TypeInfo> oTypeInfo = metaInfo.typeInfos().stream().filter(t -> {
                 return t.dataType() == dataType.dataType();
-            }).toList().get(0);
+            }).findFirst();
 
-            sb.append(typeInfo.typeName());
+            String typeName = oTypeInfo.map(TypeInfo::typeName).orElse(dataType.dataType().getName());
+            sb.append(typeName);
 
             dataType.columnSize().ifPresent(columnSize -> {
                 sb.append("(");

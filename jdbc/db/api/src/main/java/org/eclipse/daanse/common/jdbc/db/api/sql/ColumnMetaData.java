@@ -13,11 +13,12 @@
 */
 package org.eclipse.daanse.common.jdbc.db.api.sql;
 
+import java.sql.JDBCType;
 import java.util.Optional;
 
 public interface ColumnMetaData {
 
-    int dataType();
+    JDBCType dataType();
 
     Optional<Integer> columnSize();
 

@@ -15,6 +15,7 @@ package org.eclipse.daanse.common.jdbc.db.core;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -47,8 +48,8 @@ import org.eclipse.daanse.common.jdbc.db.record.meta.TableDefinitionR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.TableMetaDataR;
 import org.eclipse.daanse.common.jdbc.db.record.meta.TypeInfoR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.CatalogReferenceR;
-import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnMetaDataR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnDefinitionR;
+import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnMetaDataR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.SchemaReferenceR;
 import org.eclipse.daanse.common.jdbc.db.record.sql.element.TableReferenceR;
@@ -277,7 +278,8 @@ public class DatabaseServiceImpl implements DatabaseService {
                 final short maximumScale = rs.getShort("MAXIMUM_SCALE");
                 final int numPrecRadix = rs.getInt("NUM_PREC_RADIX");
 
-                TypeInfoR typeInfo = new TypeInfoR(typeName, dataType, percision, literatPrefix, literatSuffix,
+                JDBCType jdbcType = JDBCType.valueOf(dataType);
+                TypeInfoR typeInfo = new TypeInfoR(typeName, jdbcType, percision, literatPrefix, literatSuffix,
                         createPragmas, nullable, caseSensitive, searchable, unsignesAttribute, fixedPrecScale,
                         autoIncrement, localTypeName, minimumScale, maximumScale, numPrecRadix);
                 typeInfos.add(typeInfo);
@@ -383,11 +385,12 @@ public class DatabaseServiceImpl implements DatabaseService {
                 Optional<CatalogReference> oCatRef = oCatalogName.map(cn -> new CatalogReferenceR(cn));
                 Optional<SchemaReference> oSchemaRef = oSchemaName.map(sn -> new SchemaReferenceR(oCatRef, sn));
 
+                JDBCType jdbcType = JDBCType.valueOf(dataType);
                 TableReference tableReference = new TableReferenceR(oSchemaRef, tableName);
 
                 ColumnReference columnReference = new ColumnReferenceR(Optional.of(tableReference), columName);
                 ColumnDefinition columnDefinition = new ColumnDefinitionR(columnReference,
-                        new ColumnMetaDataR(dataType, Optional.of(columnSize), decimalDigits, remarks));
+                        new ColumnMetaDataR(jdbcType, Optional.of(columnSize), decimalDigits, remarks));
 
                 columnDefinitions.add(columnDefinition);
             }

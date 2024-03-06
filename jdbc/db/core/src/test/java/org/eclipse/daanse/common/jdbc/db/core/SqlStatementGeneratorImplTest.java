@@ -16,7 +16,7 @@ package org.eclipse.daanse.common.jdbc.db.core;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import java.sql.Types;
+import java.sql.JDBCType;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,9 +51,9 @@ class SqlStatementGeneratorImplTest {
         typeInfoVarchar = Mockito.mock(TypeInfo.class);
         typeInfoInt = Mockito.mock(TypeInfo.class);
         when(typeInfoVarchar.typeName()).thenReturn("varchar");
-        when(typeInfoVarchar.dataType()).thenReturn(Types.VARCHAR);
+        when(typeInfoVarchar.dataType()).thenReturn(JDBCType.VARCHAR);
         when(typeInfoInt.typeName()).thenReturn("int");
-        when(typeInfoInt.dataType()).thenReturn(Types.INTEGER);
+        when(typeInfoInt.dataType()).thenReturn(JDBCType.INTEGER);
     }
 
     private SqlStatementGenerator generator = new SqlStatementGeneratorImpl(new MetaInfoR(
@@ -167,7 +167,7 @@ class SqlStatementGeneratorImplTest {
         String sql = generator.getSqlOfStatement(new CreateContainerSqlStatementR(
                 new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnDefinitionR(new ColumnReferenceR("Col1"),
-                        new ColumnMetaDataR(Types.INTEGER, Optional.empty(), Optional.empty(), Optional.empty()))),
+                        new ColumnMetaDataR(JDBCType.INTEGER, Optional.empty(), Optional.empty(), Optional.empty()))),
                 true));
 
         assertThat(sql).isEqualTo("CREATE TABLE IF NOT EXISTS #theSchemaName#.#theTableName#( #Col1# int)");
@@ -179,7 +179,7 @@ class SqlStatementGeneratorImplTest {
         String sql = generator.getSqlOfStatement(new CreateContainerSqlStatementR(
                 new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnDefinitionR(new ColumnReferenceR("Col1"),
-                        new ColumnMetaDataR(Types.VARCHAR, Optional.of(200), Optional.empty(), Optional.empty()))),
+                        new ColumnMetaDataR(JDBCType.VARCHAR, Optional.of(200), Optional.empty(), Optional.empty()))),
                 true));
         assertThat(sql).isEqualTo("CREATE TABLE IF NOT EXISTS #theSchemaName#.#theTableName#( #Col1# varchar(200))");
 
@@ -190,9 +190,9 @@ class SqlStatementGeneratorImplTest {
         String sql = generator.getSqlOfStatement(new CreateContainerSqlStatementR(
                 new TableReferenceR(Optional.of(new SchemaReferenceR("theSchemaName")), "theTableName", "TABLE"),
                 List.of(new ColumnDefinitionR(new ColumnReferenceR("Col1"),
-                        new ColumnMetaDataR(Types.INTEGER, Optional.empty(), Optional.empty(), Optional.empty())),
+                        new ColumnMetaDataR(JDBCType.INTEGER, Optional.empty(), Optional.empty(), Optional.empty())),
                         new ColumnDefinitionR(new ColumnReferenceR("Col2"),
-                                new ColumnMetaDataR(Types.INTEGER, Optional.empty(), Optional.empty(),
+                                new ColumnMetaDataR(JDBCType.INTEGER, Optional.empty(), Optional.empty(),
                                         Optional.empty()))),
                 true));
         assertThat(sql).isEqualTo("CREATE TABLE IF NOT EXISTS #theSchemaName#.#theTableName#( #Col1# int, #Col2# int)");
