@@ -254,7 +254,6 @@ public class CsvDataLoader implements FileSystemWatcherListener {
             }
             count++;
         }
-        LOGGER.debug("---");
 
         ps.executeBatch();
         LOGGER.debug("execute batch time {}", (System.currentTimeMillis() - start));
@@ -304,6 +303,10 @@ public class CsvDataLoader implements FileSystemWatcherListener {
             return;
         }
         case Types.DECIMAL: {
+            ps.setDouble(index, field.equals("") ? 0.0 : Double.valueOf(field));
+            return;
+        }
+        case Types.NUMERIC: {
             ps.setDouble(index, field.equals("") ? 0.0 : Double.valueOf(field));
             return;
         }
