@@ -17,7 +17,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Editor Config Validation against PR base commit
-      uses: github/super-linter/slim@962a6409c1b303d0e53a9d34ada577a0362f4fae # v5.2.1
+      uses: github/super-linter/slim@41b037bdc8c97f4f9c0c43cb32de23a62764ca2f # v5.2.1
       env:
         VALIDATE_ALL_CODEBASE: false
         VALIDATE_EDITORCONFIG: true
