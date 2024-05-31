@@ -316,6 +316,27 @@
             </gpgArguments>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.ec4j.maven</groupId>
+          <artifactId>editorconfig-maven-plugin</artifactId>
+          <version>0.1.3</version>
+          <executions>
+            <execution>
+              <id>check</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+      <!-- See http://ec4j.github.io/editorconfig-maven-plugin/ for full configuration reference -->
+            <excludes>
+              <exclude>**/*.svg</exclude>
+              <exclude>src/gen/**/*</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -405,6 +426,11 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.ec4j.maven</groupId>
+        <artifactId>editorconfig-maven-plugin</artifactId>
+      </plugin>
+
     </plugins>
   </build>
   <dependencyManagement>
