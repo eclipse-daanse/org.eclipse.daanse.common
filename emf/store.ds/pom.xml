@@ -20,7 +20,7 @@
     <version>${revision}</version>
   </parent>
   <properties>
-    <org.eclipse.persistence.version>4.0.2</org.eclipse.persistence.version>
+    <org.eclipse.persistence.version>4.0.3</org.eclipse.persistence.version>
   </properties>
   <artifactId>org.eclipse.daanse.common.emf.store.ds</artifactId>
   <dependencies>
