@@ -107,7 +107,7 @@
     <osgi.function.version>1.2.0</osgi.function.version>
     <osgi.promise.version>1.2.0</osgi.promise.version>
     <org.osgi.test.version>1.3.0</org.osgi.test.version>
-    <logback.version>1.5.3</logback.version>
+    <logback.version>1.5.6</logback.version>
     <aries.spifly.version>1.3.7</aries.spifly.version>
   </properties>
   <repositories>
