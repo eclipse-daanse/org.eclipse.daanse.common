@@ -21,6 +21,21 @@
   </parent>
   <artifactId>org.eclipse.daanse.common.emf.model.emfdbmapping</artifactId>
 
+  <properties>
+    <bnd.version>7.1.0-SNAPSHOT</bnd.version>
+  </properties>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>bnd-snapshots</id>
+      <url>https://bndtools.jfrog.io/bndtools/libs-snapshot/</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+
   <dependencies>
     <dependency>
       <groupId>org.eclipse.emf</groupId>
