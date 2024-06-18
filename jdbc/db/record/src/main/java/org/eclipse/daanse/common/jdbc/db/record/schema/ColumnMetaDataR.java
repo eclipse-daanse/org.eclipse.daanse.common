@@ -11,12 +11,14 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.record.sql.statement;
+package org.eclipse.daanse.common.jdbc.db.record.schema;
 
-import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.DropContainerSqlStatement;
+import java.sql.JDBCType;
+import java.util.Optional;
 
-public record DropContainerSqlStatementR(TableReference container, boolean ifExists)
-        implements DropContainerSqlStatement {
+import org.eclipse.daanse.common.jdbc.db.api.schema.ColumnMetaData;
+
+public record ColumnMetaDataR(JDBCType dataType, Optional<Integer> columnSize, Optional<Integer> decimalDigits,
+        Optional<String> remarks) implements ColumnMetaData {
 
 }

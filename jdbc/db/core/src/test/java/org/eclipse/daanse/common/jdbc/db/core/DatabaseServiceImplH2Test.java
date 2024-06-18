@@ -30,10 +30,10 @@ import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo;
 import org.eclipse.daanse.common.jdbc.db.api.schema.CatalogReference;
 import org.eclipse.daanse.common.jdbc.db.api.schema.SchemaReference;
 import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
-import org.eclipse.daanse.common.jdbc.db.record.sql.element.CatalogReferenceR;
-import org.eclipse.daanse.common.jdbc.db.record.sql.element.ColumnReferenceR;
-import org.eclipse.daanse.common.jdbc.db.record.sql.element.SchemaReferenceR;
-import org.eclipse.daanse.common.jdbc.db.record.sql.element.TableReferenceR;
+import org.eclipse.daanse.common.jdbc.db.record.schema.CatalogReferenceR;
+import org.eclipse.daanse.common.jdbc.db.record.schema.ColumnReferenceR;
+import org.eclipse.daanse.common.jdbc.db.record.schema.SchemaReferenceR;
+import org.eclipse.daanse.common.jdbc.db.record.schema.TableReferenceR;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
 

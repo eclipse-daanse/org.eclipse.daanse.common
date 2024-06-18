@@ -11,10 +11,12 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.record.sql.element;
+package org.eclipse.daanse.common.jdbc.db.record.sql;
 
-import org.eclipse.daanse.common.jdbc.db.api.schema.CatalogReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.DropContainerSqlStatement;
 
-public record CatalogReferenceR(String name) implements CatalogReference {
+public record DropContainerSqlStatementR(TableReference container, boolean ifExists)
+        implements DropContainerSqlStatement {
 
 }

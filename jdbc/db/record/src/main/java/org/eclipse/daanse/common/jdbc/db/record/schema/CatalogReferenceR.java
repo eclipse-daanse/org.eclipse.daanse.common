@@ -11,11 +11,10 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.record.sql.statement;
+package org.eclipse.daanse.common.jdbc.db.record.schema;
 
-import org.eclipse.daanse.common.jdbc.db.api.schema.SchemaReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.DropSchemaSqlStatement;
+import org.eclipse.daanse.common.jdbc.db.api.schema.CatalogReference;
 
-public record DropSchemaSqlStatementR(SchemaReference schema, boolean ifExists) implements DropSchemaSqlStatement {
+public record CatalogReferenceR(String name) implements CatalogReference {
 
 }

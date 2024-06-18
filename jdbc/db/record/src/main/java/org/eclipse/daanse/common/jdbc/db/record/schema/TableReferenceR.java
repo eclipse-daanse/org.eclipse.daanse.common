@@ -11,7 +11,7 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.record.sql.element;
+package org.eclipse.daanse.common.jdbc.db.record.schema;
 
 import java.util.Optional;
 

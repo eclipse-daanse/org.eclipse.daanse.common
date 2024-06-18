@@ -11,15 +11,11 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.record.sql.statement;
+package org.eclipse.daanse.common.jdbc.db.record.sql;
 
-import java.util.List;
-
-import org.eclipse.daanse.common.jdbc.db.api.schema.ColumnDefinition;
 import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.CreateSqlStatement;
+import org.eclipse.daanse.common.jdbc.db.api.sql.TruncateTableSqlStatement;
 
-public record CreateContainerSqlStatementR(TableReference table, List<ColumnDefinition> columnDefinitions,
-        boolean ifNotExists) implements CreateSqlStatement {
+public record TruncateTableSqlStatementR(TableReference table) implements TruncateTableSqlStatement {
 
 }
