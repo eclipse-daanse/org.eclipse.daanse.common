@@ -13,7 +13,7 @@
 */
 package org.eclipse.daanse.common.jdbc.db.record.sql.element;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.CatalogReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.CatalogReference;
 
 public record CatalogReferenceR(String name) implements CatalogReference {
 

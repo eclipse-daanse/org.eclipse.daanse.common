@@ -13,7 +13,9 @@
 */
 package org.eclipse.daanse.common.jdbc.db.api.sql;
 
-public interface Named {
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
 
-    String name();
+public non-sealed interface TruncateTableSqlStatement extends SqlStatement {
+
+    TableReference table();
 }

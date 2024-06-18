@@ -16,7 +16,7 @@ package org.eclipse.daanse.common.jdbc.db.api.meta;
 
 import java.util.Optional;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
 
 public interface TableDefinition {
 

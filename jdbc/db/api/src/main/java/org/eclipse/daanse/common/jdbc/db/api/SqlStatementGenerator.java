@@ -13,7 +13,7 @@
 */
 package org.eclipse.daanse.common.jdbc.db.api;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.statement.SqlStatement;
+import org.eclipse.daanse.common.jdbc.db.api.sql.SqlStatement;
 
 /**
  * Generates SQL-Statements as {@link String}. Respects quoting

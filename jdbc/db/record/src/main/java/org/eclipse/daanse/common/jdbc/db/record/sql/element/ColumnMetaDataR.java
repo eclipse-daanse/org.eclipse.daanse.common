@@ -16,7 +16,7 @@ package org.eclipse.daanse.common.jdbc.db.record.sql.element;
 import java.sql.JDBCType;
 import java.util.Optional;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnMetaData;
+import org.eclipse.daanse.common.jdbc.db.api.schema.ColumnMetaData;
 
 public record ColumnMetaDataR(JDBCType dataType, Optional<Integer> columnSize, Optional<Integer> decimalDigits,
         Optional<String> remarks) implements ColumnMetaData {

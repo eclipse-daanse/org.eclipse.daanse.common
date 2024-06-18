@@ -15,8 +15,8 @@ package org.eclipse.daanse.common.jdbc.db.record.sql.element;
 
 import java.util.Optional;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.CatalogReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.SchemaReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.CatalogReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.SchemaReference;
 
 public record SchemaReferenceR(Optional<CatalogReference> catalog, String name) implements SchemaReference {
 

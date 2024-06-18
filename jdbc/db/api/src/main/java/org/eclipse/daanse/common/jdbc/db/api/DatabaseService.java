@@ -25,11 +25,11 @@ import org.eclipse.daanse.common.jdbc.db.api.meta.ImportedKey;
 import org.eclipse.daanse.common.jdbc.db.api.meta.MetaInfo;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TableDefinition;
 import org.eclipse.daanse.common.jdbc.db.api.meta.TypeInfo;
-import org.eclipse.daanse.common.jdbc.db.api.sql.CatalogReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDefinition;
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.SchemaReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.CatalogReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.ColumnDefinition;
+import org.eclipse.daanse.common.jdbc.db.api.schema.ColumnReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.SchemaReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
 
 /**
  * Service that helps to communicate with the Database.

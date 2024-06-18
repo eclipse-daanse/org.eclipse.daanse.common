@@ -13,8 +13,8 @@
 */
 package org.eclipse.daanse.common.jdbc.db.record.sql.statement;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.statement.DropContainerSqlStatement;
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.DropContainerSqlStatement;
 
 public record DropContainerSqlStatementR(TableReference container, boolean ifExists)
         implements DropContainerSqlStatement {

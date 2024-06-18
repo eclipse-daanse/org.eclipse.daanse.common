@@ -11,13 +11,13 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.api.sql.statement;
+package org.eclipse.daanse.common.jdbc.db.api.sql;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.SchemaReference;
 
-public non-sealed interface DropContainerSqlStatement extends SqlStatement {
+public non-sealed interface DropSchemaSqlStatement extends SqlStatement {
 
     boolean ifExists();
 
-    TableReference container();
+    SchemaReference schema();
 }

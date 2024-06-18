@@ -11,19 +11,18 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.api.sql.statement;
+package org.eclipse.daanse.common.jdbc.db.api.sql;
 
 import java.util.List;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.ColumnDefinition;
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
 
-public non-sealed interface InsertSqlStatement extends SqlStatement {
+public non-sealed interface CreateSqlStatement extends SqlStatement {
+
+    boolean ifNotExists();
 
     TableReference table();
 
-    List<ColumnReference> columns();
-
-    List<String> values();
-
+    List<ColumnDefinition> columnDefinitions();
 }

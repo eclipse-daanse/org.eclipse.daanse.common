@@ -11,8 +11,9 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.api.sql;
+package org.eclipse.daanse.common.jdbc.db.api.schema;
 
-public interface CatalogReference extends Named {
+public interface Named {
 
+    String name();
 }

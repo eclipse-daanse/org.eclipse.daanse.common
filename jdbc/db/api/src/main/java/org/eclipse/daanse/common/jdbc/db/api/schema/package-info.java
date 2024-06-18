@@ -11,9 +11,7 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.api.sql.statement;
+@org.osgi.annotation.bundle.Export
+@org.osgi.annotation.versioning.Version("0.0.1")
 
-public sealed interface SqlStatement permits DropContainerSqlStatement, CreateSqlStatement, CreateSchemaSqlStatement,
-        TruncateTableSqlStatement, DropSchemaSqlStatement, InsertSqlStatement {
-
-}
+package org.eclipse.daanse.common.jdbc.db.api.schema;

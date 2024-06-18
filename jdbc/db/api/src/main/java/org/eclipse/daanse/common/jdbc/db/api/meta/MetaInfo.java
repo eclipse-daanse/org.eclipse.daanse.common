@@ -16,7 +16,7 @@ package org.eclipse.daanse.common.jdbc.db.api.meta;
 import java.sql.DatabaseMetaData;
 import java.util.List;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.CatalogReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.CatalogReference;
 
 /**
  * MetaInfo holds all essential values of the {@link DatabaseMetaData} in an

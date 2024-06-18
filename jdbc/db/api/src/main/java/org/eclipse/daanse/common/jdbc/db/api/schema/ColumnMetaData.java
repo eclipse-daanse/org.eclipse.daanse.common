@@ -11,13 +11,18 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.api.sql.statement;
+package org.eclipse.daanse.common.jdbc.db.api.schema;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.SchemaReference;
+import java.sql.JDBCType;
+import java.util.Optional;
 
-public non-sealed interface DropSchemaSqlStatement extends SqlStatement {
+public interface ColumnMetaData {
 
-    boolean ifExists();
+    JDBCType dataType();
 
-    SchemaReference schema();
+    Optional<Integer> columnSize();
+
+    Optional<Integer> decimalDigits();
+
+    Optional<String> remarks();
 }

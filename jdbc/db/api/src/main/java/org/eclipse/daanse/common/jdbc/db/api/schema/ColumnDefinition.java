@@ -11,18 +11,11 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.api.sql;
+package org.eclipse.daanse.common.jdbc.db.api.schema;
 
-import java.sql.JDBCType;
-import java.util.Optional;
+public interface ColumnDefinition {
 
-public interface ColumnMetaData {
+    ColumnReference column();
 
-    JDBCType dataType();
-
-    Optional<Integer> columnSize();
-
-    Optional<Integer> decimalDigits();
-
-    Optional<String> remarks();
+    ColumnMetaData columnType();
 }

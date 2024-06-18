@@ -13,8 +13,8 @@
 */
 package org.eclipse.daanse.common.jdbc.db.record.sql.statement;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.statement.TruncateTableSqlStatement;
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.TruncateTableSqlStatement;
 
 public record TruncateTableSqlStatementR(TableReference table) implements TruncateTableSqlStatement {
 

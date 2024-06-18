@@ -15,9 +15,9 @@ package org.eclipse.daanse.common.jdbc.db.record.sql.statement;
 
 import java.util.List;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnDefinition;
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.statement.CreateSqlStatement;
+import org.eclipse.daanse.common.jdbc.db.api.schema.ColumnDefinition;
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.CreateSqlStatement;
 
 public record CreateContainerSqlStatementR(TableReference table, List<ColumnDefinition> columnDefinitions,
         boolean ifNotExists) implements CreateSqlStatement {

@@ -11,7 +11,13 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-@org.osgi.annotation.bundle.Export
-@org.osgi.annotation.versioning.Version("0.0.1")
+package org.eclipse.daanse.common.jdbc.db.api.sql;
 
-package org.eclipse.daanse.common.jdbc.db.api.sql.statement;
+import org.eclipse.daanse.common.jdbc.db.api.schema.SchemaReference;
+
+public non-sealed interface CreateSchemaSqlStatement extends SqlStatement {
+
+    boolean ifNotExists();
+
+    SchemaReference schema();
+}

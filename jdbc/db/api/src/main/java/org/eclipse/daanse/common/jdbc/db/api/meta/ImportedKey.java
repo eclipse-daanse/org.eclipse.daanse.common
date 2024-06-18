@@ -15,7 +15,7 @@ package org.eclipse.daanse.common.jdbc.db.api.meta;
 
 import java.sql.DatabaseMetaData;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.ColumnReference;
 
 /**
  *

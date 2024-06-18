@@ -13,8 +13,8 @@
 */
 package org.eclipse.daanse.common.jdbc.db.record.sql.statement;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.SchemaReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.statement.CreateSchemaSqlStatement;
+import org.eclipse.daanse.common.jdbc.db.api.schema.SchemaReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.CreateSchemaSqlStatement;
 
 public record CreateSchemaSqlStatementR(SchemaReference schema, boolean ifNotExists)
         implements CreateSchemaSqlStatement {

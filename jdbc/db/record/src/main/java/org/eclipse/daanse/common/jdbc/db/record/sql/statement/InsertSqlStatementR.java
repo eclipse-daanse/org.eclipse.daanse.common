@@ -15,9 +15,9 @@ package org.eclipse.daanse.common.jdbc.db.record.sql.statement;
 
 import java.util.List;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.statement.InsertSqlStatement;
+import org.eclipse.daanse.common.jdbc.db.api.schema.ColumnReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.InsertSqlStatement;
 
 public record InsertSqlStatementR(TableReference table, List<ColumnReference> columns, List<String> values)
         implements InsertSqlStatement {

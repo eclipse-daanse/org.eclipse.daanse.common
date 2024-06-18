@@ -13,9 +13,11 @@
 */
 package org.eclipse.daanse.common.jdbc.db.api.sql;
 
-import java.util.Optional;
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
 
-public interface SchemaReference extends Named {
+public non-sealed interface DropContainerSqlStatement extends SqlStatement {
 
-    Optional<CatalogReference> catalog();
+    boolean ifExists();
+
+    TableReference container();
 }

@@ -13,8 +13,8 @@
 */
 package org.eclipse.daanse.common.jdbc.db.record.sql.statement;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.SchemaReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.statement.DropSchemaSqlStatement;
+import org.eclipse.daanse.common.jdbc.db.api.schema.SchemaReference;
+import org.eclipse.daanse.common.jdbc.db.api.sql.DropSchemaSqlStatement;
 
 public record DropSchemaSqlStatementR(SchemaReference schema, boolean ifExists) implements DropSchemaSqlStatement {
 

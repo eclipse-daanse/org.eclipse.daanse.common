@@ -11,11 +11,9 @@
 *   SmartCity Jena - initial
 *   Stefan Bischof (bipolis.org) - initial
 */
-package org.eclipse.daanse.common.jdbc.db.api.sql.statement;
+package org.eclipse.daanse.common.jdbc.db.api.sql;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
+public sealed interface SqlStatement permits DropContainerSqlStatement, CreateSqlStatement, CreateSchemaSqlStatement,
+        TruncateTableSqlStatement, DropSchemaSqlStatement, InsertSqlStatement {
 
-public non-sealed interface TruncateTableSqlStatement extends SqlStatement {
-
-    TableReference table();
 }

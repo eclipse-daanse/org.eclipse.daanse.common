@@ -15,8 +15,8 @@ package org.eclipse.daanse.common.jdbc.db.record.sql.element;
 
 import java.util.Optional;
 
-import org.eclipse.daanse.common.jdbc.db.api.sql.ColumnReference;
-import org.eclipse.daanse.common.jdbc.db.api.sql.TableReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.ColumnReference;
+import org.eclipse.daanse.common.jdbc.db.api.schema.TableReference;
 
 public record ColumnReferenceR(Optional<TableReference> table, String name) implements ColumnReference {
 
